@@ -1,0 +1,29 @@
+node_modules/
+.watchman*
+
+# Metro
+.metro-health-check*
+*.jsbundle
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/app/.cxx/
+android/.cxx/
+android/local.properties
+*.keystore
+!debug.keystore
+
+# iOS
+ios/build/
+ios/Pods/
+ios/*.xcworkspace
+!ios/*.xcodeproj/project.xcworkspace
+
+# Misc
+.DS_Store
+*.log
+coverage/
+.env
+.env.*
