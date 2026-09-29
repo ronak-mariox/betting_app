@@ -18,15 +18,30 @@ export const faqs = [
     q: 'How do I deposit money?',
     a: 'Go to Wallet → Deposit. Choose your payment method (UPI, Net Banking, or Card) and enter the amount. Deposits are instant via UPI.',
   },
-  {q: 'How long do withdrawals take?', a: 'Withdrawals are processed within 24 hours of request.'},
-  {q: 'What is Cash Out?', a: 'Cash Out lets you settle a bet early for a guaranteed amount.'},
+  {
+    q: 'How long do withdrawals take?',
+    a: 'Withdrawals are processed within 24 hours of request.',
+  },
+  {
+    q: 'What is Cash Out?',
+    a: 'Cash Out lets you settle a bet early for a guaranteed amount.',
+  },
   {
     q: 'How does the referral program work?',
-    a: 'Share your code — you earn ₹250 once your friend joins and makes their first deposit.',
+    a: 'Share your code from Profile → Refer a Friend. Friends who sign up with it join under the same agent as you.',
   },
-  {q: 'Is my money safe?', a: 'Funds are held securely and protected with bank-grade encryption.'},
-  {q: 'How do I change my password?', a: 'Go to Settings → Security to update your password.'},
-  {q: 'What sports can I bet on?', a: 'Cricket, football, tennis, basketball and more.'},
+  {
+    q: 'Is my money safe?',
+    a: 'Funds are held securely and protected with bank-grade encryption.',
+  },
+  {
+    q: 'How do I change my password?',
+    a: 'Go to Settings → Security to update your password.',
+  },
+  {
+    q: 'What sports can I bet on?',
+    a: 'Cricket, football, tennis, basketball and more.',
+  },
 ];
 
 export type SupportChannel = {
@@ -85,6 +100,5 @@ export const ticketCategories = [
   'Withdrawal Issue',
   'Bet Problem',
   'Account Issue',
-  'Bonus Query',
   'Other',
 ];

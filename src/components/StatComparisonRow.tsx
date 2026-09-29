@@ -28,13 +28,9 @@ export const StatComparisonRow = ({stat}: StatComparisonRowProps) => (
     </View>
 
     <View style={styles.bar}>
-      <View
-        style={[styles.segment, styles.home, {flex: stat.homeWeight}]}
-      />
+      <View style={[styles.segment, styles.home, {flex: stat.homeWeight}]} />
       <View style={styles.spacer} />
-      <View
-        style={[styles.segment, styles.away, {flex: stat.awayWeight}]}
-      />
+      <View style={[styles.segment, styles.away, {flex: stat.awayWeight}]} />
     </View>
   </View>
 );

@@ -14,7 +14,11 @@ import {colors, scale, spacing, type} from '../theme';
 
 type LoginScreenProps = {
   onBack?: () => void;
-  onSubmit?: (credentials: {username: string; password: string}) => void;
+  /** Resolves to an error message to show under the button, or nothing once signed in. */
+  onSubmit?: (credentials: {
+    username: string;
+    password: string;
+  }) => Promise<string | void> | void;
   onCreateAccount?: () => void;
   /** Footer links — "Help", "Privacy" or "Terms". */
   onOpenLink?: (link: string) => void;
@@ -34,7 +38,20 @@ export const LoginScreen = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const canSubmit = username.trim().length > 0 && password.length > 0;
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSubmit = !busy && username.trim().length > 0 && password.length > 0;
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    const message = await onSubmit?.({username, password});
+    setBusy(false);
+    if (message) {
+      setError(message);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -72,10 +89,18 @@ export const LoginScreen = ({
         <Button
           variant="primary"
           size="lg"
-          label={login.submitLabel}
+          label={busy ? 'Login ho raha hai…' : login.submitLabel}
           disabled={!canSubmit}
-          onPress={() => onSubmit?.({username, password})}
+          onPress={submit}
         />
+
+        {error ? (
+          <Text
+            style={[type.helperText, styles.error]}
+            accessibilityRole="alert">
+            {error}
+          </Text>
+        ) : null}
 
         <InfoCallout
           emoji="💡"
@@ -111,6 +136,10 @@ export const LoginScreen = ({
 };
 
 const styles = StyleSheet.create({
+  error: {
+    color: colors.danger,
+    textAlign: 'center',
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.bgDeep,

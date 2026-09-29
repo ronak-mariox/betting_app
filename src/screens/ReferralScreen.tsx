@@ -5,13 +5,10 @@ import {BackHeader, Card, Icon} from '../components';
 import {copyToClipboard, openExternal, shareText} from '../utils/actions';
 import {
   howItWorks,
-  referralCode,
   referralMessage,
   referralHeader,
   referralHero,
-  referrals,
   shareTargets,
-  topReferrer,
 } from '../data/referral';
 import {
   colors,
@@ -24,12 +21,15 @@ import {
 } from '../theme';
 
 type ReferralScreenProps = {
+  /** This player's own code, from their account. */
+  referralCode?: string;
   onBack?: () => void;
 };
 
 /** Each share button hands the same invite to a different app. */
-const share = (targetId: string) => {
-  const text = encodeURIComponent(referralMessage);
+const share = (targetId: string, referralCode: string) => {
+  const message = referralMessage(referralCode);
+  const text = encodeURIComponent(message);
   switch (targetId) {
     case 'whatsapp':
       return openExternal(
@@ -44,12 +44,15 @@ const share = (targetId: string) => {
     case 'copy':
       return copyToClipboard(referralCode, 'Referral code copy ho gaya');
     default:
-      return shareText(referralMessage);
+      return shareText(message);
   }
 };
 
 /** Refer & Earn — Figma node 9:92. */
-export const ReferralScreen = ({onBack}: ReferralScreenProps) => (
+export const ReferralScreen = ({
+  referralCode = '',
+  onBack,
+}: ReferralScreenProps) => (
   <View style={styles.screen}>
     <BackHeader
       title={referralHeader.title}
@@ -77,15 +80,6 @@ export const ReferralScreen = ({onBack}: ReferralScreenProps) => (
         <Text style={[type.heroSub, styles.heroSub]}>
           {referralHero.subtitle}
         </Text>
-
-        <View style={styles.heroStats}>
-          {referralHero.stats.map(stat => (
-            <View key={stat.label} style={styles.heroStat}>
-              <Text style={type.heroStatValue}>{stat.value}</Text>
-              <Text style={type.heroStatLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
       </LinearGradient>
 
       {/* Code + share */}
@@ -112,7 +106,7 @@ export const ReferralScreen = ({onBack}: ReferralScreenProps) => (
           {shareTargets.map(target => (
             <Pressable
               key={target.id}
-              onPress={() => share(target.id)}
+              onPress={() => share(target.id, referralCode)}
               accessibilityRole="button"
               accessibilityLabel={target.label}
               style={({pressed}) => [
@@ -148,50 +142,6 @@ export const ReferralScreen = ({onBack}: ReferralScreenProps) => (
           </View>
         ))}
       </Card>
-
-      {/* Referral list */}
-      <View>
-        <Text style={type.cardTitle}>
-          {`Your Referrals (${referrals.length})`}
-        </Text>
-        {referrals.map(person => (
-          <View key={person.id} style={styles.person}>
-            <LinearGradient
-              useAngle
-              angle={gradients.logo.angle}
-              colors={[...gradients.logo.colors]}
-              locations={[...gradients.logo.locations]}
-              style={styles.personAvatar}>
-              <Text style={type.stepNumber}>{person.initial}</Text>
-            </LinearGradient>
-            <View style={styles.flex}>
-              <Text style={type.txnTitle}>{person.name}</Text>
-              <Text style={type.kickoff}>{person.date}</Text>
-            </View>
-            <View style={styles.personRight}>
-              <Text style={type.creditAmount}>{person.amount}</Text>
-              <Text style={type.creditNote}>✓ credited</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {/* Top referrer */}
-      <LinearGradient
-        useAngle
-        angle={gradients.topReferrer.angle}
-        colors={[...gradients.topReferrer.colors]}
-        locations={[...gradients.topReferrer.locations]}
-        style={styles.topCard}>
-        <Text style={type.trophyEmoji}>{topReferrer.emoji}</Text>
-        <Text style={[type.promoTitle, styles.topLabel]}>
-          {topReferrer.label}
-        </Text>
-        <Text style={[type.topName, styles.topName]}>{topReferrer.name}</Text>
-        <Text style={[type.settingSub, styles.topNote]}>
-          {topReferrer.note}
-        </Text>
-      </LinearGradient>
     </ScrollView>
   </View>
 );

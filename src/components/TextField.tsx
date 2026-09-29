@@ -19,6 +19,12 @@ type TextFieldProps = Omit<TextInputProps, 'style'> & {
   secure?: boolean;
   /** `md` = 56 tall form field (gap 12); `sm` = 48 tall search field (gap 8). */
   size?: 'md' | 'sm';
+  /** Accepted value: blue border plus a green check, as on the KYC forms. */
+  valid?: boolean;
+  /** Shown in red under the field, e.g. why what was typed isn't accepted. */
+  error?: string;
+  /** Recolours the leading glyph (e.g. the cyan globe drawn grey on KYC). */
+  iconColor?: string;
 };
 
 /**
@@ -30,6 +36,9 @@ export const TextField = ({
   icon,
   secure = false,
   size = 'md',
+  valid = false,
+  error,
+  iconColor,
   ...inputProps
 }: TextFieldProps) => {
   const [hidden, setHidden] = useState(secure);
@@ -43,15 +52,16 @@ export const TextField = ({
           styles.field,
           size === 'sm' && styles.fieldSm,
           !label && styles.fieldUnlabelled,
+          valid && styles.fieldValid,
         ]}>
-        <Icon name={icon} />
+        <Icon name={icon} color={iconColor} />
         <TextInput
+          autoCapitalize="none"
+          autoCorrect={false}
           {...inputProps}
           style={[type.input, styles.input]}
           placeholderTextColor={colors.textDim}
           secureTextEntry={hidden}
-          autoCapitalize="none"
-          autoCorrect={false}
           underlineColorAndroid="transparent"
         />
         {secure ? (
@@ -63,12 +73,22 @@ export const TextField = ({
             <Icon name="eyeSm" />
           </Pressable>
         ) : null}
+        {valid && !secure ? <Icon name="checkValid" size={13.994} /> : null}
       </View>
+      {error ? (
+        <Text style={[type.helperText, styles.error]} accessibilityRole="alert">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  error: {
+    paddingTop: spacing.sm,
+    color: colors.danger,
+  },
   flex: {
     flex: 1,
   },
@@ -90,6 +110,9 @@ const styles = StyleSheet.create({
   },
   fieldUnlabelled: {
     marginTop: 0,
+  },
+  fieldValid: {
+    borderColor: colors.primary,
   },
   input: {
     flex: 1,

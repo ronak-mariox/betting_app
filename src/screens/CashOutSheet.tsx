@@ -68,7 +68,7 @@ export const CashOutSheet = ({bet, onClose, onConfirm}: CashOutSheetProps) => {
         {/* Bet summary — same layout as the list card, without the CTA */}
         <Card style={styles.block} contentStyle={styles.cardPad}>
           <View style={styles.rowBetween}>
-            <Text style={type.league}>{bet.id}</Text>
+            <Text style={type.league}>{bet.reference ?? bet.id}</Text>
             <Badge
               variant="status"
               label={status.label}
@@ -124,8 +124,8 @@ export const CashOutSheet = ({bet, onClose, onConfirm}: CashOutSheetProps) => {
           contentStyle={styles.cardPad}>
           <Text style={type.noteText}>
             By cashing out now you guarantee{' '}
-            <Text style={type.noteHighlight}>{rupees(offer)}</Text> regardless of
-            match outcome. Current odds are favourable for an early exit.
+            <Text style={type.noteHighlight}>{rupees(offer)}</Text> regardless
+            of match outcome. The offer follows the live odds, so it can change.
           </Text>
         </Card>
 

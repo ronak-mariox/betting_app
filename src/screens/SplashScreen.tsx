@@ -1,12 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Svg, {
-  Circle,
-  Defs,
-  RadialGradient,
-  Stop,
-} from 'react-native-svg';
+import Svg, {Circle, Defs, RadialGradient, Stop} from 'react-native-svg';
 import {Icon} from '../components';
 import {
   colors,
@@ -76,9 +71,17 @@ export const SplashScreen = ({
       style={styles.container}>
       {/* Blue radial glow — 288px, 15% opacity, centred above the logo. */}
       <View style={styles.glow} pointerEvents="none">
-        <Svg width={scale(GLOW_SIZE)} height={scale(GLOW_SIZE)} viewBox="0 0 288 288">
+        <Svg
+          width={scale(GLOW_SIZE)}
+          height={scale(GLOW_SIZE)}
+          viewBox="0 0 288 288">
           <Defs>
-            <RadialGradient id="glow" cx="144" cy="144" r="203.65" gradientUnits="userSpaceOnUse">
+            <RadialGradient
+              id="glow"
+              cx="144"
+              cy="144"
+              r="203.65"
+              gradientUnits="userSpaceOnUse">
               <Stop offset="0" stopColor="#1E88E5" stopOpacity="1" />
               <Stop offset="0.175" stopColor="#1766AC" stopOpacity="0.75" />
               <Stop offset="0.35" stopColor="#0F4473" stopOpacity="0.5" />
@@ -110,18 +113,18 @@ export const SplashScreen = ({
 
       <View style={styles.progressBlock}>
         <View style={styles.progressInner}>
-        <View style={styles.track}>
-          <Animated.View style={[styles.fillWrap, {width: fillWidth}]}>
-            <LinearGradient
-              useAngle
-              angle={gradients.progress.angle}
-              colors={[...gradients.progress.colors]}
-              locations={[...gradients.progress.locations]}
-              style={styles.fill}
-            />
-          </Animated.View>
-        </View>
-        <Text style={[type.splashLoading, styles.loading]}>Loading...</Text>
+          <View style={styles.track}>
+            <Animated.View style={[styles.fillWrap, {width: fillWidth}]}>
+              <LinearGradient
+                useAngle
+                angle={gradients.progress.angle}
+                colors={[...gradients.progress.colors]}
+                locations={[...gradients.progress.locations]}
+                style={styles.fill}
+              />
+            </Animated.View>
+          </View>
+          <Text style={[type.splashLoading, styles.loading]}>Loading...</Text>
         </View>
       </View>
     </LinearGradient>

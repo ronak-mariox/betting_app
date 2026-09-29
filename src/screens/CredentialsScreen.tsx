@@ -105,9 +105,7 @@ export const CredentialsScreen = ({
             <View style={styles.credValue}>
               <Icon name="lockSm" />
               <Text
-                style={
-                  revealed ? type.credentialValue : type.credentialMasked
-                }
+                style={revealed ? type.credentialValue : type.credentialMasked}
                 numberOfLines={1}>
                 {revealed ? password : '•'.repeat(password.length)}
               </Text>
@@ -119,7 +117,10 @@ export const CredentialsScreen = ({
                 accessibilityLabel={
                   revealed ? 'Hide password' : 'Show password'
                 }
-                style={({pressed}) => [styles.eyeBtn, pressed && styles.pressed]}>
+                style={({pressed}) => [
+                  styles.eyeBtn,
+                  pressed && styles.pressed,
+                ]}>
                 <Icon name="eyeToggle" />
               </Pressable>
               <CopyButton label="Password" value={password} />

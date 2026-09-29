@@ -1,12 +1,14 @@
 import React, {useCallback, useState} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {BottomNav, Button, MatchCard} from '../components';
-import {liveFeed, liveHeader} from '../data/live';
+import {BottomNav, Button, Match, MatchCard} from '../components';
+import {liveHeader} from '../data/live';
 import {colors, scale, spacing, type} from '../theme';
 
 type LiveScreenProps = {
-  onOpenMatch?: () => void;
+  /** Matches currently in play, from the backend. */
+  matches?: Match[];
+  onOpenMatch?: (id: string) => void;
   /** Only set when the screen is pushed (Home's "See All"), not from the tab bar. */
   onBack?: () => void;
   onChangeNav?: (key: string) => void;
@@ -14,14 +16,13 @@ type LiveScreenProps = {
 
 /** Live matches — Figma node 8:19. Reuses the Home match card verbatim. */
 export const LiveScreen = ({
+  matches = [],
   onOpenMatch,
   onBack,
   onChangeNav,
 }: LiveScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [starred, setStarred] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(liveFeed.map(m => [m.id, Boolean(m.starred)])),
-  );
+  const [starred, setStarred] = useState<Record<string, boolean>>({});
 
   const toggleStar = useCallback((id: string) => {
     setStarred(prev => ({...prev, [id]: !prev[id]}));
@@ -42,7 +43,7 @@ export const LiveScreen = ({
         <View style={styles.copy}>
           <Text style={type.pageTitle}>{liveHeader.title}</Text>
           <Text style={[type.screenSubtitle, styles.subtitle]}>
-            {liveHeader.subtitle}
+            {`${matches.length} ${matches.length === 1 ? 'match' : 'matches'} in progress`}
           </Text>
         </View>
       </View>
@@ -50,19 +51,22 @@ export const LiveScreen = ({
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}>
-        {liveFeed.map(match => (
+        {matches.map(match => (
           <View key={match.id} style={styles.cardWrap}>
             <MatchCard
               match={{...match, starred: starred[match.id]}}
-              onPress={onOpenMatch}
-              onShowMarkets={onOpenMatch}
+              onPress={() => onOpenMatch?.(match.id)}
+              onShowMarkets={() => onOpenMatch?.(match.id)}
+              onSelectMarket={() => onOpenMatch?.(match.id)}
               onToggleStar={() => toggleStar(match.id)}
             />
           </View>
         ))}
 
         <Text style={[type.emptyNote, styles.emptyNote]}>
-          {liveHeader.emptyNote}
+          {matches.length === 0
+            ? 'Abhi koi live match nahi hai'
+            : liveHeader.emptyNote}
         </Text>
       </ScrollView>
 

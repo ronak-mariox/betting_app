@@ -4,7 +4,7 @@ import {colors, hairline, radius, scale, spacing, type} from '../theme';
 import {Icon, IconName} from './Icon';
 
 export type TransactionKind = 'credit' | 'debit';
-export type TransactionState = 'success' | 'settled' | 'pending';
+export type TransactionState = 'success' | 'settled' | 'pending' | 'rejected';
 
 export type Transaction = {
   id: string;
@@ -21,6 +21,7 @@ const stateColors: Record<TransactionState, {color: string; bg: string}> = {
   success: {color: colors.success, bg: colors.chipSuccess},
   settled: {color: colors.accent, bg: colors.chipAccent},
   pending: {color: colors.warning, bg: colors.chipWarning},
+  rejected: {color: colors.danger, bg: colors.pillDanger},
 };
 
 type TransactionRowProps = {
@@ -31,6 +32,8 @@ type TransactionRowProps = {
 export const TransactionRow = ({transaction}: TransactionRowProps) => {
   const isCredit = transaction.kind === 'credit';
   const state = stateColors[transaction.state];
+  /** A rejected request never moved money, so its amount is greyed and struck out. */
+  const rejected = transaction.state === 'rejected';
 
   return (
     <View style={styles.row}>
@@ -50,7 +53,9 @@ export const TransactionRow = ({transaction}: TransactionRowProps) => {
         <Text style={type.txnTitle} numberOfLines={1}>
           {transaction.title}
         </Text>
-        <Text style={[type.kickoff, styles.time]}>{transaction.time}</Text>
+        <Text style={[type.kickoff, styles.time]} numberOfLines={2}>
+          {transaction.time}
+        </Text>
       </View>
 
       <View style={styles.right}>
@@ -58,6 +63,7 @@ export const TransactionRow = ({transaction}: TransactionRowProps) => {
           style={[
             type.txnAmount,
             {color: isCredit ? colors.success : colors.danger},
+            rejected && styles.rejectedAmount,
           ]}>
           {transaction.amount}
         </Text>
@@ -72,6 +78,10 @@ export const TransactionRow = ({transaction}: TransactionRowProps) => {
 };
 
 const styles = StyleSheet.create({
+  rejectedAmount: {
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -112,6 +112,25 @@ export const colors = {
   calloutGoldBg: 'rgba(255, 213, 79, 0.05)',
   calloutGoldBorder: 'rgba(255, 213, 79, 0.15)',
 
+  /* --- KYC ------------------------------------------------------------ */
+  kycHeroTop: '#1E3A5F', // shield tile gradient start
+  kycHeroBorder: 'rgba(30, 136, 229, 0.3)', // shield tile + checked consent border
+  uploadBg: 'rgba(30, 136, 229, 0.03)', // empty document card fill
+  uploadBorder: 'rgba(30, 136, 229, 0.35)', // dashed document card border
+  uploadWell: 'rgba(30, 136, 229, 0.12)', // upload icon well + replace button
+  uploadedBorder: 'rgba(0, 200, 83, 0.22)', // uploaded document card border
+  wellDangerStrong: 'rgba(255, 82, 82, 0.12)', // remove-document button
+  reviewHead: 'rgba(255, 255, 255, 0.03)', // review card section header
+  successRing: 'rgba(0, 200, 83, 0.1)', // submitted badge outer ring fill
+  successRingBorder: 'rgba(0, 200, 83, 0.25)',
+  dangerRing: 'rgba(255, 82, 82, 0.1)',
+  dangerRingBorder: 'rgba(255, 82, 82, 0.25)',
+  noteBg: 'rgba(30, 136, 229, 0.05)', // "Profile > KYC" hint box
+  noteBorder: 'rgba(30, 136, 229, 0.15)',
+  pillWarning: 'rgba(255, 193, 7, 0.15)', // "Under Review" badge
+  pillSuccess: 'rgba(0, 200, 83, 0.15)',
+  pillDanger: 'rgba(255, 82, 82, 0.15)',
+
   /* --- Borders (all hairlines are 0.701 in Figma) ---------------------- */
   borderCard: 'rgba(255, 255, 255, 0.07)',
   borderHairline: 'rgba(255, 255, 255, 0.05)',
@@ -171,6 +190,17 @@ export const gradients = {
     colors: [colors.success, '#00897B'],
     locations: [0, 1],
   },
+  /** KYC status badge while under review / after a rejection. */
+  warningBadge: {
+    angle: 135,
+    colors: [colors.warning, '#FB8C00'],
+    locations: [0, 1],
+  },
+  dangerBadge: {
+    angle: 135,
+    colors: [colors.danger, '#C62828'],
+    locations: [0, 1],
+  },
   referralHero: {
     angle: 141.29,
     colors: [colors.primaryDeep, colors.primary, colors.accent],
@@ -216,6 +246,17 @@ export const gradients = {
   ctaPrimary: {
     angle: 170.7,
     colors: [colors.primary, colors.primaryMid],
+    locations: [0, 1],
+  },
+  kycHero: {
+    angle: 135,
+    colors: [colors.kycHeroTop, colors.surface],
+    locations: [0, 1],
+  },
+  /** Completed-step connector on the KYC step indicator. */
+  kycStepDone: {
+    angle: 90,
+    colors: [colors.success, colors.accent],
     locations: [0, 1],
   },
   progress: {

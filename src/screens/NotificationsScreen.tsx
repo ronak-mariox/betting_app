@@ -1,21 +1,45 @@
 import React, {useState} from 'react';
-import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Button} from '../components';
-import {notifications} from '../data/notifications';
+import type {AppNotification} from '../data/notifications';
 import {colors, hairline, radius, scale, spacing, type} from '../theme';
 
 type NotificationsScreenProps = {
+  /** The player's feed, newest first. */
+  notifications?: AppNotification[];
   onBack?: () => void;
+  /** Tapping a row: marks it read and opens what it's about. */
+  onOpen?: (notification: AppNotification) => void;
+  onMarkAllRead?: () => void;
+  /** Pull to refresh. */
+  onRefresh?: () => Promise<void> | void;
 };
 
 /** Notifications — Figma node 9:340. */
-export const NotificationsScreen = ({onBack}: NotificationsScreenProps) => {
+export const NotificationsScreen = ({
+  notifications = [],
+  onBack,
+  onOpen,
+  onMarkAllRead,
+  onRefresh,
+}: NotificationsScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [read, setRead] = useState<Record<string, boolean>>({});
+  const [refreshing, setRefreshing] = useState(false);
+  const hasUnread = notifications.some(item => item.unread);
 
-  const markAllRead = () =>
-    setRead(Object.fromEntries(notifications.map(n => [n.id, true])));
+  const refresh = async () => {
+    setRefreshing(true);
+    await onRefresh?.();
+    setRefreshing(false);
+  };
 
   return (
     <View style={styles.screen}>
@@ -31,22 +55,39 @@ export const NotificationsScreen = ({onBack}: NotificationsScreenProps) => {
         </View>
 
         <Pressable
-          onPress={markAllRead}
+          onPress={onMarkAllRead}
+          disabled={!hasUnread}
           hitSlop={spacing.md}
-          accessibilityRole="button">
+          accessibilityRole="button"
+          accessibilityLabel="Mark all read"
+          accessibilityState={{disabled: !hasUnread}}
+          style={!hasUnread && styles.dim}>
           <Text style={type.link}>Mark all read</Text>
         </Pressable>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}>
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.textPrimary}
+          />
+        }>
+        {notifications.length === 0 ? (
+          <Text style={[type.emptyNote, styles.empty]}>
+            Abhi koi notification nahi hai — deposit, bet result aur offers
+            yahan dikhenge
+          </Text>
+        ) : null}
         {notifications.map(item => {
-          const unread = item.unread && !read[item.id];
+          const unread = item.unread;
           return (
             <Pressable
               key={item.id}
-              onPress={() => setRead(prev => ({...prev, [item.id]: true}))}
+              onPress={() => onOpen?.(item)}
               accessibilityRole="button"
               accessibilityLabel={item.title}
               style={({pressed}) => [
@@ -134,5 +175,13 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.8,
+  },
+  dim: {
+    opacity: 0.4,
+  },
+  empty: {
+    paddingTop: scale(48),
+    paddingHorizontal: spacing.xl, // 16
+    textAlign: 'center',
   },
 });

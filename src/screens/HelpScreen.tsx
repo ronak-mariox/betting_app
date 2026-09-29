@@ -106,7 +106,8 @@ export const HelpScreen = ({onBack}: HelpScreenProps) => {
           <>
             {supportChannels.map(channel => (
               <Card key={channel.id} contentStyle={styles.channel}>
-                <View style={[styles.channelWell, {backgroundColor: channel.well}]}>
+                <View
+                  style={[styles.channelWell, {backgroundColor: channel.well}]}>
                   <Icon name={channel.icon} color={channel.color} />
                 </View>
                 <View style={styles.flex}>

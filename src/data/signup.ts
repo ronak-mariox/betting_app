@@ -14,7 +14,8 @@ export const signup = {
   referralLabel: 'Referral Code ',
   referralOptional: '(Optional)',
   referralPlaceholder: 'Jaise: RAHUL250',
-  bonus: '+₹50 Bonus',
+  /** Shown beside a referral code that looks right. */
+  bonus: 'Code ✓',
   passwordLabel: 'Password Banao *',
   passwordPlaceholder: 'Kam se kam 6 characters',
   /** In-field shortcut that fills a ready-made password. */

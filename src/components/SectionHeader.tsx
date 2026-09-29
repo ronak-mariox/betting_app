@@ -32,7 +32,9 @@ export const SectionHeader = ({
     <View style={styles.left}>
       {showLiveDot ? <View style={styles.liveDot} /> : null}
       <Text style={type.sectionTitle}>{title}</Text>
-      {count !== undefined ? <Badge label={String(count)} variant="count" /> : null}
+      {count !== undefined ? (
+        <Badge label={String(count)} variant="count" />
+      ) : null}
     </View>
 
     {actionLabel ? (

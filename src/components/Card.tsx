@@ -1,11 +1,5 @@
 import React, {PropsWithChildren} from 'react';
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from 'react-native';
+import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {colors, gradients, GradientToken, hairline, radius} from '../theme';
 
@@ -50,8 +44,8 @@ export const Card = ({
     (variant === 'live'
       ? colors.borderLive
       : variant === 'gradient'
-      ? 'transparent'
-      : colors.borderCard);
+        ? 'transparent'
+        : colors.borderCard);
 
   const frame: StyleProp<ViewStyle> = [
     styles.base,
