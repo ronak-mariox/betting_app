@@ -30,11 +30,12 @@ import {
 type SignUpScreenProps = {
   onBack?: () => void;
   /** Every value here is typed by the user; the CTA won't fire until they're valid. */
+  /** Resolves to an error message to show under the button, or nothing once the account exists. */
   onSubmit?: (form: {
     username: string;
     password: string;
     referral: string;
-  }) => void;
+  }) => Promise<string | void> | void;
   onLogin?: () => void;
   /** "Terms & Conditions" / "Privacy Policy" in the consent line. */
   onOpenLink?: (link: string) => void;
@@ -60,7 +61,20 @@ export const SignUpScreen = ({
   const usernameValid = isUsernameValid(username);
   const referralValid = referral.trim().length > 0;
   const passwordValid = password.length >= passwordMinLength;
-  const canSubmit = usernameValid && passwordValid && agreed;
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSubmit = !busy && usernameValid && passwordValid && agreed;
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    const message = await onSubmit?.({username, password, referral});
+    setBusy(false);
+    if (message) {
+      setError(message);
+    }
+  };
 
   /** "Auto" fills the same field and reveals it, so the user can note it down. */
   const fillSuggestedPassword = () => {
@@ -147,7 +161,10 @@ export const SignUpScreen = ({
               onPress={fillSuggestedPassword}
               accessibilityRole="button"
               accessibilityLabel="Generate a password"
-              style={({pressed}) => [styles.autoPill, pressed && styles.pressed]}>
+              style={({pressed}) => [
+                styles.autoPill,
+                pressed && styles.pressed,
+              ]}>
               <Icon name="boltSm" />
               <Text style={type.link}>{signup.generateCta}</Text>
             </Pressable>
@@ -218,7 +235,7 @@ export const SignUpScreen = ({
 
         {/* Submit */}
         <Pressable
-          onPress={() => onSubmit?.({username, password, referral})}
+          onPress={submit}
           disabled={!canSubmit}
           accessibilityRole="button"
           accessibilityState={{disabled: !canSubmit}}
@@ -236,10 +253,18 @@ export const SignUpScreen = ({
             style={styles.ctaFill}>
             <Icon name="boltCta" />
             <Text style={[type.buttonXl, styles.ctaLabel]}>
-              {signup.submit}
+              {busy ? 'Account ban raha hai…' : signup.submit}
             </Text>
           </LinearGradient>
         </Pressable>
+
+        {error ? (
+          <Text
+            style={[type.helperText, styles.submitError]}
+            accessibilityRole="alert">
+            {error}
+          </Text>
+        ) : null}
 
         <View style={styles.loginRow}>
           <Text style={type.footerNote}>{signup.loginPrompt} </Text>
@@ -257,6 +282,10 @@ export const SignUpScreen = ({
 };
 
 const styles = StyleSheet.create({
+  submitError: {
+    color: colors.danger,
+    textAlign: 'center',
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.bgDeep,

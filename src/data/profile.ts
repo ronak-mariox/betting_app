@@ -7,24 +7,29 @@ export const profile = {
   initials: 'RK',
   name: 'Rahul Kumar',
   phone: '+91 98765 43210',
-  tier: '🥇 Gold Member',
   referralCode: 'RAHUL2025',
   stats: [
-    {label: 'Total Bets', value: '47'},
-    {label: 'Won', value: '28'},
-    {label: 'Win Rate', value: '59.6%'},
+    {label: 'Total Bets', value: '0'},
+    {label: 'Won', value: '0'},
+    {label: 'Win Rate', value: '—'},
   ],
 };
 
 export const profileMenu: MenuItem[] = [
   {id: 'edit', icon: 'menuEdit', label: 'Edit Profile'},
+  // Opens the KYC flow, or its status once submitted.
+  {
+    id: 'kyc',
+    icon: 'kycShieldSm',
+    label: 'KYC Verification',
+    iconColor: colors.accent,
+  },
   {id: 'bets', icon: 'menuBets', label: 'My Bets'},
   {id: 'wallet', icon: 'menuWallet', label: 'Wallet'},
   {
     id: 'referral',
     icon: 'menuRefer',
-    label: 'Refer & Earn',
-    hint: '₹250 per referral',
+    label: 'Refer a Friend',
     wellColor: colors.wellMenuSuccess,
   },
   {id: 'notifications', icon: 'menuBell', label: 'Notifications'},

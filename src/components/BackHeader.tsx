@@ -30,7 +30,9 @@ export const BackHeader = ({title, subtitle, onBack}: BackHeaderProps) => {
           {title}
         </Text>
         {subtitle ? (
-          <Text style={[type.screenSubtitle, styles.subtitle]} numberOfLines={1}>
+          <Text
+            style={[type.screenSubtitle, styles.subtitle]}
+            numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}

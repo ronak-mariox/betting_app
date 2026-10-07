@@ -28,7 +28,12 @@ type HeaderProps = PropsWithChildren<{
  * top-to-bottom #0D1B2A → #07111F gradient. Padding: 20 top / 16 sides /
  * 16 bottom, plus the device's safe-area top inset.
  */
-export const Header = ({greeting, name, actions = [], children}: HeaderProps) => {
+export const Header = ({
+  greeting,
+  name,
+  actions = [],
+  children,
+}: HeaderProps) => {
   const insets = useSafeAreaInsets();
 
   return (

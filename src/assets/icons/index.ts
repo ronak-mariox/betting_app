@@ -111,6 +111,22 @@ export const icons = {
 </g>
 </svg>`,
   },
+  calendar: {
+    size: 15.994,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="15.9944" height="15.9944" viewBox="0 0 15.9944 15.9944" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_18)">
+<path id="Vector" d="M5.33147 1.33287V3.9986" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M10.6629 1.33287V3.9986" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M12.6622 2.66573H3.33217C2.59604 2.66573 1.9993 3.26248 1.9993 3.9986V13.3287C1.9993 14.0648 2.59604 14.6615 3.33217 14.6615H12.6622C13.3984 14.6615 13.9951 14.0648 13.9951 13.3287V3.9986C13.9951 3.26248 13.3984 2.66573 12.6622 2.66573Z" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M1.9993 6.66433H13.9951" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_18">
+<rect width="15.9944" height="15.9944" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,
+  },
   camera: {
     size: 13.996,
     xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="13.9957" height="13.9957" viewBox="0 0 13.9957 13.9957" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -147,6 +163,20 @@ export const icons = {
 <g id="Icon">
 <path id="Vector" d="M9.993 2.9979L4.49685 8.49405L1.9986 5.9958" stroke="white" stroke-width="0.9993" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
+</svg>`,
+  },
+  checkCircle: {
+    size: 17.995,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="17.9947" height="17.9947" viewBox="0 0 17.9947 17.9947" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_14)">
+<path id="Vector" d="M8.99735 16.4951C13.1383 16.4951 16.4951 13.1383 16.4951 8.99735C16.4951 4.85643 13.1383 1.49956 8.99735 1.49956C4.85643 1.49956 1.49956 4.85643 1.49956 8.99735C1.49956 13.1383 4.85643 16.4951 8.99735 16.4951Z" stroke="#00C853" stroke-width="1.49956" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M6.74801 8.99735L8.24757 10.4969L11.2467 7.49779" stroke="#00C853" stroke-width="1.49956" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_14">
+<rect width="17.9947" height="17.9947" fill="white"/>
+</clipPath>
+</defs>
 </svg>`,
   },
   checkLg: {
@@ -212,6 +242,20 @@ export const icons = {
 <g id="Icon">
 <path id="Vector" d="M11.9999 9.99988L7.9999 5.99993L3.99995 9.99988" stroke="#4FC3F7" stroke-width="1.33332" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
+</svg>`,
+  },
+  clock: {
+    size: 8.997,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="8.99736" height="8.99736" viewBox="0 0 8.99736 8.99736" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_10)">
+<path id="Vector" d="M4.49868 8.24758C6.56914 8.24758 8.24758 6.56914 8.24758 4.49868C8.24758 2.42822 6.56914 0.74978 4.49868 0.74978C2.42822 0.74978 0.74978 2.42822 0.74978 4.49868C0.74978 6.56914 2.42822 8.24758 4.49868 8.24758Z" stroke="#FFC107" stroke-width="0.74978" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M4.49868 2.24934V4.49868L5.99824 5.24846" stroke="#FFC107" stroke-width="0.74978" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_10">
+<rect width="8.99736" height="8.99736" fill="white"/>
+</clipPath>
+</defs>
 </svg>`,
   },
   close: {
@@ -393,6 +437,23 @@ export const icons = {
 </defs>
 </svg>`,
   },
+  fileText: {
+    size: 15.994,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="15.9944" height="15.9944" viewBox="0 0 15.9944 15.9944" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_16)">
+<path id="Vector" d="M9.9965 1.33287H3.9986C3.6451 1.33287 3.30608 1.47329 3.05612 1.72325C2.80616 1.97322 2.66573 2.31224 2.66573 2.66573V13.3287C2.66573 13.6822 2.80616 14.0212 3.05612 14.2711C3.30608 14.5211 3.6451 14.6615 3.9986 14.6615H11.9958C12.3493 14.6615 12.6883 14.5211 12.9383 14.2711C13.1882 14.0212 13.3287 13.6822 13.3287 13.3287V4.66503L9.9965 1.33287Z" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M9.33007 1.33287V3.9986C9.33007 4.3521 9.47049 4.69112 9.72045 4.94108C9.97042 5.19104 10.3094 5.33147 10.6629 5.33147H13.3287" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M6.66433 5.9979H5.33147" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M10.6629 8.66363H5.33147" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M10.6629 11.3294H5.33147" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_16">
+<rect width="15.9944" height="15.9944" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,
+  },
   giftSm: {
     size: 16,
     xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="15.9998" height="15.9998" viewBox="0 0 15.9998 15.9998" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -428,6 +489,27 @@ export const icons = {
 <rect width="15.9998" height="15.9998" fill="white"/>
 </clipPath>
 </defs>
+</svg>`,
+  },
+  kycShieldSm: {
+    size: 17.995,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="17.9947" height="17.9947" viewBox="0 0 17.9947 17.9947" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_4)">
+<path id="Vector" d="M14.9956 9.74713C14.9956 13.496 12.3714 15.3705 9.25228 16.4577C9.08894 16.513 8.91153 16.5104 8.74992 16.4502C5.62334 15.3705 2.99912 13.496 2.99912 9.74713V4.49868C2.99912 4.29982 3.07811 4.10911 3.21872 3.9685C3.35933 3.82789 3.55004 3.7489 3.7489 3.7489C5.24845 3.7489 7.1229 2.84916 8.42752 1.7095C8.58636 1.57379 8.78843 1.49922 8.99735 1.49922C9.20627 1.49922 9.40834 1.57379 9.56718 1.7095C10.8793 2.85666 12.7462 3.7489 14.2458 3.7489C14.4447 3.7489 14.6354 3.82789 14.776 3.9685C14.9166 4.10911 14.9956 4.29982 14.9956 4.49868V9.74713Z" stroke="white" stroke-width="1.49956" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_4">
+<rect width="17.9947" height="17.9947" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,
+  },
+  kycShield: {
+    size: 43.999,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="43.9992" height="43.9992" viewBox="0 0 43.9992 43.9992" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path id="Vector" d="M36.666 23.8329C36.666 32.9994 30.2494 37.5827 22.6229 40.2409C22.2236 40.3763 21.7898 40.3698 21.3946 40.2226C13.7497 37.5826 7.3332 32.9994 7.3332 23.8329V10.9998C7.3332 10.5136 7.52635 10.0473 7.87016 9.70346C8.21397 9.35965 8.68028 9.1665 9.1665 9.1665C12.8331 9.1665 17.4163 6.96654 20.6063 4.17992C20.9947 3.84809 21.4888 3.66578 21.9996 3.66578C22.5104 3.66578 23.0045 3.84809 23.3929 4.17992C26.6012 6.98487 31.1661 9.1665 34.8327 9.1665C35.3189 9.1665 35.7852 9.35965 36.129 9.70346C36.4729 10.0473 36.666 10.5136 36.666 10.9998V23.8329Z" stroke="#4FC3F7" stroke-width="3.6666" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
 </svg>`,
   },
   lockSm: {
@@ -476,6 +558,20 @@ export const icons = {
 <path id="Vector_2" d="M11.9973 12.8847L15.7458 9.13622L11.9973 5.3877" stroke="#FF5252" stroke-width="1.49941" stroke-linecap="round" stroke-linejoin="round"/>
 <path id="Vector_3" d="M15.7458 9.13599H6.74939" stroke="#FF5252" stroke-width="1.49941" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
+</svg>`,
+  },
+  mapPin: {
+    size: 15.994,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="15.9944" height="15.9944" viewBox="0 0 15.9944 15.9944" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_12)">
+<path id="Vector" d="M8.39773 14.5276C9.63729 13.4573 13.3287 9.99183 13.3287 6.66433C13.3287 5.25034 12.767 3.89426 11.7671 2.89442C10.7673 1.89457 9.41119 1.33287 7.9972 1.33287C6.58321 1.33287 5.22713 1.89457 4.22728 2.89442C3.22744 3.89426 2.66573 5.25034 2.66573 6.66433C2.66573 9.99183 6.35711 13.4573 7.59667 14.5276C7.71215 14.6144 7.85272 14.6614 7.9972 14.6614C8.14168 14.6614 8.28225 14.6144 8.39773 14.5276Z" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M7.9972 8.66363C9.10138 8.66363 9.9965 7.76852 9.9965 6.66433C9.9965 5.56015 9.10138 4.66503 7.9972 4.66503C6.89302 4.66503 5.9979 5.56015 5.9979 6.66433C5.9979 7.76852 6.89302 8.66363 7.9972 8.66363Z" stroke="#6B8AA0" stroke-width="1.33287" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_12">
+<rect width="15.9944" height="15.9944" fill="white"/>
+</clipPath>
+</defs>
 </svg>`,
   },
   menuBell: {
@@ -668,6 +764,15 @@ export const icons = {
 </defs>
 </svg>`,
   },
+  pencilSm: {
+    size: 11.994,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="11.9937" height="11.9937" viewBox="0 0 11.9937 11.9937" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path id="Vector" d="M5.99685 9.99475H10.4945" stroke="#4FC3F7" stroke-width="0.999475" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M8.1837 1.81005C8.38264 1.61111 8.65246 1.49935 8.93381 1.49935C9.21515 1.49935 9.48497 1.61111 9.68391 1.81005C9.88285 2.00899 9.99462 2.27881 9.99462 2.56016C9.99462 2.8415 9.88285 3.11132 9.68391 3.31026L3.68207 9.31261C3.56318 9.43149 3.41622 9.51847 3.25479 9.56548L1.81954 9.98426C1.77654 9.9968 1.73096 9.99755 1.68757 9.98643C1.64418 9.97532 1.60457 9.95274 1.5729 9.92107C1.54122 9.88939 1.51865 9.84979 1.50753 9.80639C1.49641 9.763 1.49716 9.71742 1.50971 9.67442L1.92849 8.23917C1.97557 8.07792 2.06254 7.93115 2.18135 7.8124L8.1837 1.81005Z" stroke="#4FC3F7" stroke-width="0.999475" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>`,
+  },
   pencil: {
     size: 14.992,
     xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="14.9923" height="14.9923" viewBox="0 0 14.9923 14.9923" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -722,6 +827,17 @@ export const icons = {
 <rect width="17.9929" height="17.9929" fill="white"/>
 </clipPath>
 </defs>
+</svg>`,
+  },
+  refresh: {
+    size: 12.998,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="12.9981" height="12.9981" viewBox="0 0 12.9981 12.9981" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path id="Vector" d="M1.62476 6.49905C1.62476 5.20631 2.1383 3.96651 3.05241 3.05241C3.96651 2.1383 5.20631 1.62476 6.49905 1.62476C7.86171 1.62989 9.16963 2.1616 10.1493 3.10871L11.3733 4.3327" stroke="#4FC3F7" stroke-width="1.08317" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M11.3733 1.62476V4.3327H8.6654" stroke="#4FC3F7" stroke-width="1.08317" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M11.3733 6.49905C11.3733 7.79179 10.8598 9.03159 9.94569 9.94569C9.03159 10.8598 7.79179 11.3733 6.49905 11.3733C5.13639 11.3682 3.82847 10.8365 2.84875 9.88939L1.62476 8.6654" stroke="#4FC3F7" stroke-width="1.08317" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M4.3327 8.6654H1.62476V11.3733" stroke="#4FC3F7" stroke-width="1.08317" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
 </svg>`,
   },
   searchSm: {
@@ -885,6 +1001,16 @@ export const icons = {
 <rect width="13.9957" height="13.9957" fill="white"/>
 </clipPath>
 </defs>
+</svg>`,
+  },
+  upload: {
+    size: 19.995,
+    xml: `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="19.9951" height="19.9951" viewBox="0 0 19.9951 19.9951" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path id="Vector" d="M17.4957 12.4969V15.8295C17.4957 16.2714 17.3202 16.6952 17.0077 17.0077C16.6952 17.3202 16.2714 17.4957 15.8295 17.4957H4.16565C3.72373 17.4957 3.29991 17.3202 2.98742 17.0077C2.67494 16.6952 2.49939 16.2714 2.49939 15.8295V12.4969" stroke="#4FC3F7" stroke-width="1.66626" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M14.1632 6.66503L9.99755 2.49939L5.8319 6.66503" stroke="#4FC3F7" stroke-width="1.66626" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M9.99755 2.49939V12.4969" stroke="#4FC3F7" stroke-width="1.66626" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
 </svg>`,
   },
   userSm: {

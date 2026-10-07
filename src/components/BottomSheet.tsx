@@ -6,6 +6,8 @@ import {colors, radius, scale, spacing} from '../theme';
 type BottomSheetProps = PropsWithChildren<{
   visible: boolean;
   onClose: () => void;
+  /** Sheets with their own title row (e.g. the KYC document picker) omit the grab handle. */
+  showHandle?: boolean;
 }>;
 
 /**
@@ -13,7 +15,12 @@ type BottomSheetProps = PropsWithChildren<{
  * the grab handle from the design. Tapping the scrim or the Android back
  * button dismisses it.
  */
-export const BottomSheet = ({visible, onClose, children}: BottomSheetProps) => {
+export const BottomSheet = ({
+  visible,
+  onClose,
+  showHandle = true,
+  children,
+}: BottomSheetProps) => {
   const insets = useSafeAreaInsets();
 
   return (
@@ -32,9 +39,11 @@ export const BottomSheet = ({visible, onClose, children}: BottomSheetProps) => {
         />
 
         <View style={[styles.sheet, {paddingBottom: insets.bottom}]}>
-          <View style={styles.handleRow}>
-            <View style={styles.handle} />
-          </View>
+          {showHandle ? (
+            <View style={styles.handleRow}>
+              <View style={styles.handle} />
+            </View>
+          ) : null}
           {children}
         </View>
       </View>

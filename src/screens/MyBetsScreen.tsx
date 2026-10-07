@@ -1,8 +1,7 @@
 import React, {useMemo, useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {RefreshControl, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Bet, BetCard, BottomNav, Button, Chip} from '../components';
-import {bets as allBets} from '../data/myBets';
 import {colors, scale, spacing, type} from '../theme';
 import {CashOutSheet} from './CashOutSheet';
 
@@ -10,10 +9,12 @@ type MyBetsTab = 'open' | 'settled';
 
 type MyBetsScreenProps = {
   activeNavKey?: string;
-  /** Bets placed this session, newest first — they sit above the mock ones. */
-  placedBets?: Bet[];
-  /** Fires with the cashed-out bet so the wallet can be credited. */
-  onCashOut?: (bet: Bet) => void;
+  /** The player's bets from the backend, newest first. */
+  bets?: Bet[];
+  /** Cashes the bet out on the backend; resolves true once it's done. */
+  onCashOut?: (bet: Bet) => Promise<boolean>;
+  /** Pull-to-refresh: refetches bets (cash-out offers follow the odds). */
+  onRefresh?: () => Promise<void>;
   /** Only set when the screen is pushed, not reached from the tab bar. */
   onBack?: () => void;
   onChangeNav?: (key: string) => void;
@@ -26,17 +27,15 @@ type MyBetsScreenProps = {
  */
 export const MyBetsScreen = ({
   activeNavKey = 'bets',
-  placedBets,
+  bets = [],
   onBack,
   onCashOut,
+  onRefresh,
   onChangeNav,
 }: MyBetsScreenProps) => {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<MyBetsTab>('open');
-  const [bets, setBets] = useState<Bet[]>(() => [
-    ...(placedBets ?? []),
-    ...allBets,
-  ]);
+  const [refreshing, setRefreshing] = useState(false);
   const [cashingOut, setCashingOut] = useState<Bet | null>(null);
 
   const openBets = useMemo(() => bets.filter(b => b.status === 'open'), [bets]);
@@ -46,11 +45,16 @@ export const MyBetsScreen = ({
   );
   const visible = tab === 'open' ? openBets : settledBets;
 
-  /** Confirming removes the bet from Open — the 7:4747 state. */
-  const confirmCashOut = (bet: Bet) => {
-    setBets(current => current.filter(b => b.id !== bet.id));
+  /** Confirming settles the bet on the backend; the refetch moves it to Settled — the 7:4747 state. */
+  const confirmCashOut = async (bet: Bet) => {
     setCashingOut(null);
-    onCashOut?.(bet);
+    await onCashOut?.(bet);
+  };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await onRefresh?.();
+    setRefreshing(false);
   };
 
   return (
@@ -77,7 +81,7 @@ export const MyBetsScreen = ({
           />
           <Chip
             tone="segment"
-            label="Settled"
+            label={`Settled (${settledBets.length})`}
             active={tab === 'settled'}
             onPress={() => setTab('settled')}
           />
@@ -86,7 +90,21 @@ export const MyBetsScreen = ({
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}>
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.textPrimary}
+          />
+        }>
+        {visible.length === 0 ? (
+          <Text style={[type.emptyNote, styles.empty]}>
+            {tab === 'open'
+              ? 'Koi open bet nahi hai — Home se match choose karo'
+              : 'Abhi tak koi bet settle nahi hui'}
+          </Text>
+        ) : null}
         {visible.map((bet, index) => (
           <View key={bet.id} style={index > 0 && styles.spacing}>
             <BetCard bet={bet} onCashOut={setCashingOut} />
@@ -133,5 +151,8 @@ const styles = StyleSheet.create({
   },
   spacing: {
     paddingTop: spacing.lg, // 12
+  },
+  empty: {
+    paddingVertical: scale(32),
   },
 });

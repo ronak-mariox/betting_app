@@ -1,20 +1,33 @@
 /** Copy transcribed from the Figma SettingsScreen frame (node 9:451). */
 
 export type NotificationSetting = {
+  /** Key the switch is saved under on the account (backend: User.preferences). */
   id: string;
   label: string;
   sub: string;
 };
 
 export const notificationSettings: NotificationSetting[] = [
-  {id: 'live', label: 'Live Bet Updates', sub: 'Score & odds updates'},
   {
-    id: 'money',
+    id: 'notifyLive',
+    label: 'Live Bet Updates',
+    sub: 'Match start & bet results',
+  },
+  {
+    id: 'notifyMoney',
     label: 'Deposits & Withdrawals',
     sub: 'Transaction alerts',
   },
-  {id: 'promos', label: 'Promotions & Offers', sub: 'Bonus & referral alerts'},
-  {id: 'security', label: 'Security Alerts', sub: 'Login & security events'},
+  {
+    id: 'notifyPromos',
+    label: 'Promotions & Offers',
+    sub: 'Offers & announcements',
+  },
+  {
+    id: 'notifySecurity',
+    label: 'Security Alerts',
+    sub: 'Login & security events',
+  },
 ];
 
 export const languages = ['English', 'Hindi'];

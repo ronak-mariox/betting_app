@@ -37,6 +37,6 @@ export const features: Feature[] = [
     icon: 'featureWins',
     wellColor: colors.wellLive,
     title: 'Big Wins',
-    subtitle: 'Daily jackpots',
+    subtitle: 'Cash out anytime',
   },
 ];

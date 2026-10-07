@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {RefreshControl, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   BalanceCard,
@@ -7,14 +7,21 @@ import {
   Button,
   Card,
   Icon,
+  Transaction,
   TransactionRow,
 } from '../components';
-import {transactions, walletSummary} from '../data/wallet';
+import {walletSummary} from '../data/wallet';
+import type {PlayerWallet} from '../services/api';
+import {rupees} from '../utils/feed';
 import {colors, scale, spacing, type} from '../theme';
 
 type WalletScreenProps = {
-  /** Live wallet balance, already formatted. Falls back to the mock figure. */
-  balance?: string;
+  /** The wallet as last fetched; null while loading. */
+  wallet?: PlayerWallet | null;
+  /** Ledger + pending requests, newest first. */
+  transactions?: Transaction[];
+  /** Pull-to-refresh — e.g. to see a deposit the agent just approved. */
+  onRefresh?: () => Promise<void>;
   /** Only set when the screen is pushed, not reached from the tab bar. */
   onBack?: () => void;
   onDeposit?: () => void;
@@ -24,7 +31,9 @@ type WalletScreenProps = {
 
 /** Wallet — Figma node 8:512. */
 export const WalletScreen = ({
-  balance = walletSummary.balance,
+  wallet,
+  transactions = [],
+  onRefresh,
   onBack,
   onDeposit,
   onWithdraw,
@@ -32,6 +41,36 @@ export const WalletScreen = ({
 }: WalletScreenProps) => {
   const insets = useSafeAreaInsets();
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await onRefresh?.();
+    setRefreshing(false);
+  };
+
+  const tiles = [
+    {
+      id: 'total',
+      icon: 'txnIn' as const,
+      label: 'Total (incl. bets)',
+      value: rupees(wallet?.balance ?? 0),
+    },
+    {
+      id: 'inBets',
+      icon: 'txnBet' as const,
+      label: 'In Open Bets',
+      value: rupees(wallet?.openStake ?? 0),
+    },
+  ];
+  const meta = [
+    `+${rupees(wallet?.wonToday ?? 0)} won today`,
+    wallet?.pendingWithdrawal
+      ? `${rupees(wallet.pendingWithdrawal)} withdrawal pending`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' • ');
 
   return (
     <View style={styles.screen}>
@@ -40,7 +79,14 @@ export const WalletScreen = ({
         contentContainerStyle={[
           styles.content,
           {paddingTop: insets.top + spacing.xxl},
-        ]}>
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.textPrimary}
+          />
+        }>
         <View style={styles.titleRow}>
           {onBack ? (
             <Button
@@ -55,8 +101,12 @@ export const WalletScreen = ({
 
         <View style={styles.balanceWrap}>
           <BalanceCard
-            balance={balanceHidden ? walletSummary.hiddenBalance : balance}
-            meta={walletSummary.meta}
+            balance={
+              balanceHidden
+                ? walletSummary.hiddenBalance
+                : rupees(wallet?.available ?? 0)
+            }
+            meta={meta}
             balanceHidden={balanceHidden}
             onToggleVisibility={() => setBalanceHidden(current => !current)}
             onDeposit={onDeposit}
@@ -65,8 +115,11 @@ export const WalletScreen = ({
         </View>
 
         <View style={styles.tiles}>
-          {walletSummary.tiles.map(tile => (
-            <Card key={tile.id} style={styles.tile} contentStyle={styles.tilePad}>
+          {tiles.map(tile => (
+            <Card
+              key={tile.id}
+              style={styles.tile}
+              contentStyle={styles.tilePad}>
               <Icon name={tile.icon} />
               <Text style={[type.tileLabel, styles.tileLabel]}>
                 {tile.label}
@@ -79,6 +132,10 @@ export const WalletScreen = ({
         <Text style={[type.cardTitle, styles.sectionTitle]}>
           Recent Transactions
         </Text>
+
+        {transactions.length === 0 ? (
+          <Text style={type.emptyNote}>Abhi koi transaction nahi hai</Text>
+        ) : null}
 
         {transactions.map(transaction => (
           <TransactionRow key={transaction.id} transaction={transaction} />

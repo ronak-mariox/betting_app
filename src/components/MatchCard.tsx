@@ -78,7 +78,7 @@ export const MatchCard = ({
     {/* 2 — teams, scores and the overs chip / VS separator */}
     <View style={styles.teamsRow}>
       <View style={styles.team}>
-        <Text style={type.teamName} numberOfLines={1}>
+        <Text style={type.teamName} numberOfLines={2}>
           {match.home.name}
         </Text>
         {match.home.score ? (
@@ -99,14 +99,15 @@ export const MatchCard = ({
       </View>
 
       <View style={[styles.team, styles.teamRight]}>
-        <Text style={[type.teamName, styles.alignRight]} numberOfLines={1}>
+        <Text style={[type.teamName, styles.alignRight]} numberOfLines={2}>
           {match.away.name}
         </Text>
         {match.away.score ? (
-          <Text style={[type.score, styles.alignRight]}>{match.away.score}</Text>
+          <Text style={[type.score, styles.alignRight]}>
+            {match.away.score}
+          </Text>
         ) : (
-          <Text
-            style={[type.teamStatus, styles.statusLine, styles.alignRight]}>
+          <Text style={[type.teamStatus, styles.statusLine, styles.alignRight]}>
             {match.statusLabel}
           </Text>
         )}
@@ -139,7 +140,9 @@ export const MatchCard = ({
       android_ripple={{color: colors.borderOdds}}
       style={({pressed}) => [styles.footer, pressed && styles.pressed]}>
       <Text style={type.moreMarkets}>
-        +{match.extraMarkets} aur markets dekho
+        {match.extraMarkets > 0
+          ? `+${match.extraMarkets} aur markets dekho`
+          : 'Match kholo'}
       </Text>
       <Icon name="chevronRightSm" />
     </Pressable>

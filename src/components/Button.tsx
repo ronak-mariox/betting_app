@@ -36,7 +36,11 @@ export type ButtonVariant =
   /** Header bell/search — 40×40 #14253D square, 14 radius. */
   | 'icon'
   /** Bare text + icon row (See All / View All). */
-  | 'ghost';
+  | 'ghost'
+  /** KYC "Continue Later" — no fill, 10% white hairline, muted label. */
+  | 'subtle'
+  /** KYC "Check Status" — no fill, 1px white border, white label. */
+  | 'outlineLight';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
@@ -69,6 +73,8 @@ const backgrounds: Record<ButtonVariant, string | undefined> = {
   tint: colors.tintAccent,
   icon: colors.surface,
   ghost: undefined,
+  subtle: undefined,
+  outlineLight: undefined,
 };
 
 const labelColors: Record<ButtonVariant, string> = {
@@ -80,6 +86,8 @@ const labelColors: Record<ButtonVariant, string> = {
   tint: colors.accent,
   icon: colors.textPrimary,
   ghost: colors.accent,
+  subtle: colors.textMuted,
+  outlineLight: colors.textPrimary,
 };
 
 export const Button = ({
@@ -116,6 +124,8 @@ export const Button = ({
         size === 'sm' && styles.paddedSm,
         size === 'lg' && styles.paddedLg,
         variant === 'outline' && styles.outline,
+        variant === 'subtle' && styles.subtle,
+        variant === 'outlineLight' && styles.outlineLight,
         isIconOnly && styles.iconOnly,
         {backgroundColor: backgrounds[variant]},
         pressed && styles.pressed,
@@ -131,9 +141,7 @@ export const Button = ({
           style={StyleSheet.absoluteFill}
         />
       ) : null}
-      {icon ? (
-        <Icon name={icon} size={iconSize} color={iconColor} />
-      ) : null}
+      {icon ? <Icon name={icon} size={iconSize} color={iconColor} /> : null}
       {label ? (
         <Text
           numberOfLines={1}
@@ -141,8 +149,8 @@ export const Button = ({
             size === 'sm'
               ? type.buttonSm
               : size === 'lg'
-              ? type.buttonXl
-              : type.buttonLg,
+                ? type.buttonXl
+                : type.buttonLg,
             {color: labelColors[variant]},
             labelStyle,
           ]}>
@@ -181,6 +189,14 @@ const styles = StyleSheet.create({
   outline: {
     borderWidth: hairline,
     borderColor: colors.borderPrimary,
+  },
+  subtle: {
+    borderWidth: hairline,
+    borderColor: colors.borderInput, // 10% white
+  },
+  outlineLight: {
+    borderWidth: 1,
+    borderColor: colors.textPrimary,
   },
   paddedSm: {
     paddingHorizontal: spacing.lg, // 12

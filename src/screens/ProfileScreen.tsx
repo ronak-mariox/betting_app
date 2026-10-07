@@ -37,6 +37,10 @@ type ProfileScreenProps = {
   phone?: string;
   /** This player's own shareable code; falls back to the mock one. */
   referralCode?: string;
+  /** Drives the tick on the avatar and the status pill under the name. */
+  kycVerified?: boolean;
+  /** Total / won / win-rate figures under the avatar, from the player's bets. */
+  stats?: {label: string; value: string}[];
   /** The player's current profile photo, as a data URI — empty/undefined shows initials instead. */
   avatarPhoto?: string;
   /** Fired for menu rows that map to a built screen. */
@@ -49,11 +53,13 @@ type ProfileScreenProps = {
 
 /** Profile — Figma node 8:1346, with the 9:1070 logout confirmation. */
 export const ProfileScreen = ({
+  kycVerified = false,
   name = profile.name,
   initials = profile.initials,
   phone = profile.phone,
   referralCode = profile.referralCode,
   avatarPhoto = '',
+  stats = profile.stats,
   onOpen,
   onBack,
   onLogout,
@@ -109,9 +115,11 @@ export const ProfileScreen = ({
                   </LinearGradient>
                 )}
               </View>
-              <View style={styles.verified}>
-                <Icon name="verified" />
-              </View>
+              {kycVerified ? (
+                <View style={styles.verified}>
+                  <Icon name="verified" />
+                </View>
+              ) : null}
             </View>
 
             <View style={styles.identityCopy}>
@@ -119,8 +127,10 @@ export const ProfileScreen = ({
               <Text style={type.statText}>
                 {phone || 'Add your mobile number'}
               </Text>
-              <View style={styles.tier}>
-                <Text style={type.tierPill}>{profile.tier}</Text>
+              <View style={[styles.tier, !kycVerified && styles.tierOff]}>
+                <Text style={type.tierPill}>
+                  {kycVerified ? '✅ KYC Verified' : 'KYC baaki hai'}
+                </Text>
               </View>
             </View>
 
@@ -137,7 +147,7 @@ export const ProfileScreen = ({
           </View>
 
           <View style={styles.stats}>
-            {profile.stats.map(stat => (
+            {stats.map(stat => (
               <View key={stat.label} style={styles.stat}>
                 <Text style={type.profileStat}>{stat.value}</Text>
                 <Text style={type.profileStatLabel}>{stat.label}</Text>
@@ -243,6 +253,9 @@ export const ProfileScreen = ({
 };
 
 const styles = StyleSheet.create({
+  tierOff: {
+    backgroundColor: colors.surface,
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.bgDeep,

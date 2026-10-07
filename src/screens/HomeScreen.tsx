@@ -4,6 +4,7 @@ import {
   ListRenderItemInfo,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import {
@@ -17,26 +18,25 @@ import {
   SearchOverlay,
   SectionHeader,
   WalletCard,
+  WalletStat,
 } from '../components';
-import {
-  liveCount,
-  liveMatches,
-  matches,
-  referral,
-  searchSuggestions,
-  user,
-  wallet,
-  walletStats,
-} from '../data/home';
-import {colors, spacing} from '../theme';
+import {referral, user, wallet} from '../data/home';
+import {colors, scale, spacing, type} from '../theme';
+import {greeting} from '../utils/feed';
 
 type HomeScreenProps = {
   /** Name saved on Edit Profile; falls back to the mock one. */
   userName?: string;
   /** Live wallet balance, already formatted. Falls back to the mock figure. */
   balance?: string;
-  /** Opens the match detail screen. */
-  onOpenMatch?: () => void;
+  /** Live + upcoming matches from the backend, live first. */
+  matches?: Match[];
+  /** The live subset, for the "Live Now" rail. */
+  liveMatches?: LiveMatch[];
+  /** Today's bets / wins / losses under the balance. */
+  walletStats?: WalletStat[];
+  /** Opens the match detail screen for a match id. */
+  onOpenMatch?: (id: string) => void;
   /** Wallet card actions — same destinations as the Wallet tab's buttons. */
   onDeposit?: () => void;
   onWithdraw?: () => void;
@@ -44,6 +44,8 @@ type HomeScreenProps = {
   onSeeAll?: (section: 'live' | 'matches') => void;
   /** Header bell. */
   onOpenNotifications?: () => void;
+  /** Red dot on the bell: the player has notifications they haven't read. */
+  hasUnread?: boolean;
   /** "Invite Friends" card. */
   onOpenReferral?: () => void;
   /** Bottom-nav tab changes that route elsewhere. */
@@ -53,12 +55,16 @@ type HomeScreenProps = {
 /** Home — Figma node 7:243. */
 export const HomeScreen = ({
   userName = user.name,
-  balance = wallet.balance,
+  balance = '₹0',
+  matches = [],
+  liveMatches = [],
+  walletStats = [],
   onOpenMatch,
   onDeposit,
   onWithdraw,
   onSeeAll,
   onOpenNotifications,
+  hasUnread = false,
   onOpenReferral,
   onChangeNav,
 }: HomeScreenProps) => {
@@ -66,9 +72,7 @@ export const HomeScreen = ({
   const [searching, setSearching] = useState(false);
   /** The eye on the wallet card hides the amount; the stats stay visible. */
   const [balanceHidden, setBalanceHidden] = useState(false);
-  const [starred, setStarred] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(matches.map(m => [m.id, Boolean(m.starred)])),
-  );
+  const [starred, setStarred] = useState<Record<string, boolean>>({});
 
   const toggleStar = useCallback((id: string) => {
     setStarred(prev => ({...prev, [id]: !prev[id]}));
@@ -84,7 +88,7 @@ export const HomeScreen = ({
 
   const renderLiveMatch = useCallback(
     ({item}: ListRenderItemInfo<LiveMatch>) => (
-      <LiveMatchCard match={item} onPress={onOpenMatch} />
+      <LiveMatchCard match={item} onPress={() => onOpenMatch?.(item.id)} />
     ),
     [onOpenMatch],
   );
@@ -96,12 +100,12 @@ export const HomeScreen = ({
         contentContainerStyle={styles.scrollContent}>
         {/* Header + wallet share one gradient block, as grouped in Figma. */}
         <Header
-          greeting={user.greeting}
+          greeting={greeting()}
           name={userName}
           actions={[
             {
               icon: 'bell',
-              showDot: true,
+              showDot: hasUnread,
               accessibilityLabel: 'Notifications',
               onPress: onOpenNotifications,
             },
@@ -131,7 +135,7 @@ export const HomeScreen = ({
           <SectionHeader
             title="Live Now"
             showLiveDot
-            count={liveCount}
+            count={liveMatches.length}
             actionLabel="See All"
             actionChevron
             onActionPress={() => onSeeAll?.('live')}
@@ -145,6 +149,9 @@ export const HomeScreen = ({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.liveRail}
             ItemSeparatorComponent={LiveSeparator}
+            ListEmptyComponent={
+              <Text style={type.emptyNote}>Abhi koi live match nahi hai</Text>
+            }
           />
         </View>
 
@@ -159,14 +166,21 @@ export const HomeScreen = ({
           style={[styles.gutter, styles.matchesHeader]}
         />
 
+        {matches.length === 0 ? (
+          <Text style={[type.emptyNote, styles.emptyMatches]}>
+            Abhi koi match available nahi hai
+          </Text>
+        ) : null}
+
         {matches.map((match: Match, index) => (
           <View
             key={match.id}
             style={[styles.gutter, index > 0 && styles.matchSpacing]}>
             <MatchCard
               match={{...match, starred: starred[match.id]}}
-              onPress={onOpenMatch}
-              onShowMarkets={onOpenMatch}
+              onPress={() => onOpenMatch?.(match.id)}
+              onShowMarkets={() => onOpenMatch?.(match.id)}
+              onSelectMarket={() => onOpenMatch?.(match.id)}
               onToggleStar={() => toggleStar(match.id)}
             />
           </View>
@@ -176,11 +190,16 @@ export const HomeScreen = ({
       {/* Covers the scroll content but not the nav, as stacked in Figma. */}
       {searching ? (
         <SearchOverlay
-          suggestions={searchSuggestions}
+          suggestions={matches.map(m => `${m.home.name} vs ${m.away.name}`)}
           onCancel={() => setSearching(false)}
-          onSelect={() => {
+          onSelect={query => {
             setSearching(false);
-            onOpenMatch?.();
+            const found = matches.find(
+              m => `${m.home.name} vs ${m.away.name}` === query,
+            );
+            if (found) {
+              onOpenMatch?.(found.id);
+            }
           }}
         />
       ) : null}
@@ -226,6 +245,9 @@ const styles = StyleSheet.create({
   matchesHeader: {
     paddingTop: spacing.xl, // 16
     paddingBottom: spacing.md, // 8
+  },
+  emptyMatches: {
+    paddingVertical: scale(24),
   },
   matchSpacing: {
     paddingTop: spacing.lg, // 12

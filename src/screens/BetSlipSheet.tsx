@@ -1,29 +1,21 @@
 import React, {useState} from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  Badge,
-  BottomSheet,
-  Button,
-  Card,
-  Chip,
-  Icon,
-} from '../components';
-import {betSlip, formatRupees, walletBalance} from '../data/betSlip';
+import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Badge, BottomSheet, Button, Card, Chip, Icon} from '../components';
+import {betSlip, formatRupees} from '../data/betSlip';
 import {colors, hairline, radius, scale, spacing, type} from '../theme';
 
 type BetSlipSheetProps = {
   visible: boolean;
-  /** Live wallet balance in rupees; falls back to the mock figure. */
+  /** Available balance in rupees — what the stake can't exceed. */
   balance?: number;
-  /** The odds button that opened the slip; falls back to the mock selection. */
+  league?: string;
+  match?: string;
+  isLive?: boolean;
+  /** The odds button that opened the slip. */
   selection?: string;
   odds?: number;
+  /** True while the bet is being placed — the CTA shows progress and disables. */
+  busy?: boolean;
   onClose: () => void;
   onConfirm?: (stake: number) => void;
 };
@@ -35,9 +27,13 @@ type BetSlipSheetProps = {
  */
 export const BetSlipSheet = ({
   visible,
-  balance = walletBalance,
-  selection = betSlip.selection,
-  odds = betSlip.odds,
+  balance = 0,
+  league = '',
+  match = '',
+  isLive = false,
+  selection = '',
+  odds = 1,
+  busy = false,
   onClose,
   onConfirm,
 }: BetSlipSheetProps) => {
@@ -45,7 +41,7 @@ export const BetSlipSheet = ({
 
   const stakeValue = Number(stake) || 0;
   const potentialWin = stakeValue * odds;
-  const canConfirm = stakeValue > 0 && stakeValue <= balance;
+  const canConfirm = !busy && stakeValue > 0 && stakeValue <= balance;
 
   const summary = [
     {label: 'Stake', value: formatRupees(stakeValue)},
@@ -54,7 +50,7 @@ export const BetSlipSheet = ({
       value: formatRupees(potentialWin),
       color: colors.success,
     },
-    {label: 'Wallet Balance', value: formatRupees(balance)},
+    {label: 'Available Balance', value: formatRupees(balance)},
   ];
 
   return (
@@ -77,13 +73,11 @@ export const BetSlipSheet = ({
           style={styles.block}
           contentStyle={styles.cardPad}>
           <View style={styles.rowBetween}>
-            <Text style={type.statText}>{betSlip.league}</Text>
-            {betSlip.isLive ? <Badge label="LIVE" /> : null}
+            <Text style={type.statText}>{league}</Text>
+            {isLive ? <Badge label="LIVE" /> : null}
           </View>
 
-          <Text style={[type.matchTitle, styles.matchTitle]}>
-            {betSlip.match}
-          </Text>
+          <Text style={[type.matchTitle, styles.matchTitle]}>{match}</Text>
 
           <View style={[styles.rowBetween, styles.selectionRow]}>
             <View style={styles.flex}>
@@ -95,11 +89,7 @@ export const BetSlipSheet = ({
             <View>
               <Text style={[type.slipLabel, styles.alignRight]}>Odds</Text>
               <Text
-                style={[
-                  type.oddsValueLg,
-                  styles.alignRight,
-                  styles.oddsWhite,
-                ]}>
+                style={[type.oddsValueLg, styles.alignRight, styles.oddsWhite]}>
                 {odds.toFixed(2)}
               </Text>
             </View>
@@ -141,7 +131,11 @@ export const BetSlipSheet = ({
               key={item.label}
               style={[styles.rowBetween, index > 0 && styles.summarySpacing]}>
               <Text style={type.statText}>{item.label}</Text>
-              <Text style={[type.summaryValue, !!item.color && {color: item.color}]}>
+              <Text
+                style={[
+                  type.summaryValue,
+                  !!item.color && {color: item.color},
+                ]}>
                 {item.value}
               </Text>
             </View>
@@ -151,7 +145,13 @@ export const BetSlipSheet = ({
         <Button
           variant="primary"
           size="lg"
-          label="Confirm Bet"
+          label={
+            busy
+              ? 'Placing…'
+              : stakeValue > balance
+                ? 'Insufficient balance'
+                : 'Confirm Bet'
+          }
           disabled={!canConfirm}
           onPress={() => onConfirm?.(stakeValue)}
           style={styles.block}

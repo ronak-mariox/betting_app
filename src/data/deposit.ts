@@ -61,5 +61,16 @@ export const paymentMethods: PaymentMethod[] = [
 export const upiId = 'betpro@upi';
 export const qrImage = require('../assets/images/deposit-qr.png');
 
+/** The payment-screenshot slot on the pay step. */
+export const paymentProof = {
+  label: 'Payment Screenshot',
+  title: 'Payment ka Screenshot',
+  hint: 'JPG ya PNG • Max 5MB',
+  cta: 'Upload Karo',
+  uploaded: 'Upload ho gaya ✓',
+  help: 'Payment successful wali screen ka screenshot lagao, jisme amount aur Transaction ID dikhe',
+  missing: 'Payment ka screenshot lagana zaroori hai',
+};
+
 /** Minimum deposit, enforced by the step-1 CTA. */
 export const minDeposit = 100;

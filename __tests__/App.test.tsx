@@ -2,6 +2,8 @@
  * Smoke tests: both screens must mount and expose the copy from the Figma frames.
  */
 import React from 'react';
+import {Alert} from 'react-native';
+import {launchImageLibrary} from 'react-native-image-picker';
 import renderer, {ReactTestRenderer, act} from 'react-test-renderer';
 import {HomeScreen} from '../src/screens/HomeScreen';
 import {BetSlipSheet} from '../src/screens/BetSlipSheet';
@@ -24,6 +26,180 @@ import {MatchScreen} from '../src/screens/MatchScreen';
 import {MyBetsScreen} from '../src/screens/MyBetsScreen';
 import {SplashScreen} from '../src/screens/SplashScreen';
 import {WelcomeScreen} from '../src/screens/WelcomeScreen';
+import type {ApiBet, ApiMatch, PlayerWallet} from '../src/services/api';
+import {
+  profileStats,
+  toBet,
+  toLiveMatch,
+  toMatchCard,
+  timeAgo,
+  todayStats,
+  toWalletRows,
+} from '../src/utils/feed';
+
+/* Fixtures shaped exactly like the backend's /api/player responses. */
+const at = (hours: number) =>
+  new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+
+const LIVE: ApiMatch = {
+  _id: 'm1',
+  sport: 'Cricket',
+  emoji: '🏏',
+  league: 'IPL',
+  name: 'Mumbai Indians vs Chennai Super Kings',
+  home: 'Mumbai Indians',
+  away: 'Chennai Super Kings',
+  score: '142/3 (16.2)',
+  status: 'Live',
+  startTime: at(-1),
+  markets: [
+    {
+      _id: 'mk1',
+      name: 'Match Odds',
+      type: 'Match Odds',
+      maxBet: 50000,
+      runners: [
+        {name: 'Mumbai Indians', odds: 1.85},
+        {name: 'Chennai Super Kings', odds: 2.05},
+      ],
+    },
+    {
+      _id: 'mk2',
+      name: 'Bookmaker',
+      type: 'Bookmaker',
+      maxBet: 25000,
+      runners: [
+        {name: 'Mumbai Indians', odds: 1.9},
+        {name: 'Chennai Super Kings', odds: 2.1},
+      ],
+    },
+  ],
+};
+
+const UPCOMING: ApiMatch = {
+  _id: 'm2',
+  sport: 'Football',
+  emoji: '⚽',
+  league: 'Premier League',
+  name: 'Arsenal vs Chelsea',
+  home: 'Arsenal',
+  away: 'Chelsea',
+  score: '',
+  status: 'Upcoming',
+  startTime: at(3),
+  markets: [
+    {
+      _id: 'mk3',
+      name: 'Match Odds',
+      type: 'Match Odds',
+      maxBet: 50000,
+      runners: [
+        {name: 'Arsenal', odds: 2.4},
+        {name: 'Chelsea', odds: 2.9},
+        {name: 'Draw', odds: 3.2},
+      ],
+    },
+  ],
+};
+
+const bet = (over: Partial<ApiBet> & {_id: string}): ApiBet => ({
+  match: LIVE.name,
+  market: 'Match Odds',
+  selection: 'Mumbai Indians',
+  odds: 1.85,
+  stake: 1000,
+  status: 'Pending',
+  payout: 0,
+  placedAt: at(0),
+  settledAt: null,
+  cashOut: 950,
+  ...over,
+});
+
+const BETS: ApiBet[] = [
+  bet({_id: '64f00000000000000000aa01'}),
+  bet({
+    _id: '64f00000000000000000aa02',
+    selection: 'Chennai Super Kings',
+    odds: 2.1,
+    stake: 2000,
+    cashOut: 3800,
+  }),
+  bet({
+    _id: '64f00000000000000000aa03',
+    match: 'Djokovic vs Alcaraz',
+    selection: 'Djokovic',
+    odds: 1.5,
+    status: 'Won',
+    payout: 1500,
+    settledAt: at(0),
+    cashOut: null,
+  }),
+  bet({
+    _id: '64f00000000000000000aa04',
+    match: 'Djokovic vs Alcaraz',
+    selection: 'Alcaraz',
+    odds: 2.6,
+    status: 'Lost',
+    payout: 0,
+    settledAt: at(0),
+    cashOut: null,
+  }),
+];
+
+const WALLET: PlayerWallet = {
+  balance: 5500,
+  openStake: 3000,
+  pendingWithdrawal: 2000,
+  available: 500,
+  wonToday: 500,
+  kyc: 'Verified',
+  minDeposit: 100,
+  maxDeposit: 500000,
+  minWithdrawal: 500,
+  maxWithdrawal: 200000,
+  transactions: [
+    {
+      _id: 't1',
+      type: 'Deposit',
+      amount: 5000,
+      method: 'UPI',
+      reference: 'UPI5000',
+      status: 'Completed',
+      note: '',
+      createdAt: at(-2),
+    },
+    {
+      _id: 't2',
+      type: 'Bet Win',
+      amount: 500,
+      method: '',
+      reference: '',
+      status: 'Completed',
+      note: '',
+      createdAt: at(-1),
+    },
+  ],
+  requests: [
+    {
+      _id: 'r1',
+      kind: 'withdrawal',
+      amount: 2000,
+      method: 'Bank Transfer',
+      reference: '',
+      status: 'Pending',
+      createdAt: at(0),
+    },
+  ],
+};
+
+const homeProps = {
+  matches: [LIVE, UPCOMING].map(toMatchCard),
+  liveMatches: [toLiveMatch(LIVE)],
+  walletStats: todayStats(BETS),
+  balance: '₹5,500',
+  userName: 'Rahul Verma',
+};
 
 /**
  * Collects every rendered string. Interpolated <Text> children arrive as
@@ -32,7 +208,9 @@ import {WelcomeScreen} from '../src/screens/WelcomeScreen';
 const renderedText = (tree: ReactTestRenderer): string =>
   tree.root
     .findAllByType('Text' as never, {deep: true})
-    .flatMap(node => node.children.filter(c => typeof c === 'string') as string[])
+    .flatMap(
+      node => node.children.filter(c => typeof c === 'string') as string[],
+    )
     .join(' ');
 
 const mount = (element: React.ReactElement): ReactTestRenderer => {
@@ -120,31 +298,32 @@ describe('BetPro screens', () => {
   });
 
   it('renders the home screen with wallet, live rail and match cards', () => {
-    const tree = mount(<HomeScreen />);
+    const tree = mount(<HomeScreen {...homeProps} />);
     const text = renderedText(tree);
 
     // Header + wallet
-    expect(text).toContain('Rahul Kumar');
-    expect(text).toContain('₹12,450');
+    expect(text).toContain('Rahul Verma');
+    expect(text).toContain('₹5,500');
     expect(text).toContain('Deposit');
     expect(text).toContain('Withdraw');
+    // Today's figures come from the bets: 4 placed, +₹500 won, -₹1,000 lost
+    expect(text).toContain("Today's Bets");
+    expect(text).toContain('+₹500');
+    expect(text).toContain('-₹1,000');
 
     // Live rail
     expect(text).toContain('Live Now');
     expect(text).toContain('Mumbai Indians');
     expect(text).toContain('Chennai Super Kings');
-
-    // Promo + referral
-    // The welcome bonus promo is hidden on home
-    expect(text).not.toContain('🎁 Welcome Bonus');
     expect(text).toContain('Invite Friends');
 
-    // Match cards — live and upcoming variants
-    expect(text).toContain('15.1 Ov');
+    // Match cards — live and upcoming variants, real odds
+    expect(text).toContain('16.2 Ov');
     expect(text).toContain('HOME WIN');
-    expect(text).toContain('aur markets dekho');
+    expect(text).toContain('1.85');
+    expect(text).toContain('Arsenal');
+    expect(text).toContain('2.40');
     expect(text).toContain('VS');
-    expect(text).toContain('Today 7:30 PM');
 
     // Bottom nav
     expect(text).toContain('My Bets');
@@ -175,7 +354,9 @@ describe('BetPro screens', () => {
 
   it('fires See All / View All from the home section headers', () => {
     const sections: string[] = [];
-    const tree = mount(<HomeScreen onSeeAll={section => sections.push(section)} />);
+    const tree = mount(
+      <HomeScreen onSeeAll={section => sections.push(section)} />,
+    );
 
     for (const label of ['See All', 'View All']) {
       const link = tree.root
@@ -190,11 +371,12 @@ describe('BetPro screens', () => {
   });
 
   it('opens a match from the live rail and referral from the invite card', () => {
-    let matches = 0;
+    const opened: string[] = [];
     let referrals = 0;
     const tree = mount(
       <HomeScreen
-        onOpenMatch={() => (matches += 1)}
+        {...homeProps}
+        onOpenMatch={id => opened.push(id)}
         onOpenReferral={() => (referrals += 1)}
       />,
     );
@@ -204,7 +386,7 @@ describe('BetPro screens', () => {
       .findAll(
         node =>
           node.props?.accessibilityLabel ===
-          'Manchester City vs Arsenal',
+          'Mumbai Indians vs Chennai Super Kings',
       )
       .find(node => typeof node.props?.onPress === 'function');
     act(() => liveCard?.props.onPress());
@@ -214,15 +396,15 @@ describe('BetPro screens', () => {
       .find(node => typeof node.props?.onPress === 'function');
     act(() => invite?.props.onPress());
 
-    expect(matches).toBeGreaterThan(0);
+    expect(opened[0]).toBe('m1');
     expect(referrals).toBe(1);
 
     act(() => tree.unmount());
   });
 
   it('hides and restores the wallet balance from the eye toggle', () => {
-    const tree = mount(<HomeScreen />);
-    expect(renderedText(tree)).toContain('₹12,450');
+    const tree = mount(<HomeScreen {...homeProps} />);
+    expect(renderedText(tree)).toContain('₹5,500');
 
     const eye = (label: string) =>
       tree.root
@@ -230,65 +412,81 @@ describe('BetPro screens', () => {
         .find(node => typeof node.props?.onPress === 'function');
 
     act(() => eye('Hide wallet balance')?.props.onPress());
-    expect(renderedText(tree)).not.toContain('₹12,450');
+    expect(renderedText(tree)).not.toContain('₹5,500');
 
     act(() => eye('Show wallet balance')?.props.onPress());
-    expect(renderedText(tree)).toContain('₹12,450');
+    expect(renderedText(tree)).toContain('₹5,500');
 
     act(() => tree.unmount());
   });
 
-  it('places a bet from the match screen and lists it in My Bets', () => {
-    const placed: Array<{selection: string; stake: number}> = [];
+  it('places a bet from the match screen and lists it in My Bets', async () => {
+    const placed: Array<{marketId: string; selection: string; stake: number}> =
+      [];
     const match = mount(
-      <MatchScreen balance={12450} onPlaceBet={bet => placed.push(bet)} />,
+      <MatchScreen
+        match={LIVE}
+        balance={4500}
+        onPlaceBet={async next => {
+          placed.push(next);
+          return true;
+        }}
+      />,
     );
 
     const odds = match.root
       .findAll(node =>
-        String(node.props?.accessibilityLabel ?? '').startsWith('Kings at'),
+        String(node.props?.accessibilityLabel ?? '').startsWith(
+          'Chennai Super Kings at',
+        ),
       )
       .find(node => typeof node.props?.onPress === 'function');
     act(() => odds?.props.onPress());
 
-    // The slip opens on that selection
-    expect(renderedText(match)).toContain('Kings');
+    // The slip opens on that selection, with the real match and available balance
+    const slip = renderedText(match);
+    expect(slip).toContain('Chennai Super Kings');
+    expect(slip).toContain('2.05');
+    expect(slip).toContain('₹4,500');
 
     const confirm = match.root
       .findAll(node => node.props?.accessibilityLabel === 'Confirm Bet')
       .find(node => typeof node.props?.onPress === 'function');
-    act(() => confirm?.props.onPress());
+    await act(async () => {
+      await confirm?.props.onPress();
+    });
 
-    expect(placed).toHaveLength(1);
-    expect(placed[0].selection).toBe('Kings');
-    expect(placed[0].stake).toBeGreaterThan(0);
+    expect(placed).toEqual([
+      {marketId: 'mk1', selection: 'Chennai Super Kings', stake: 500},
+    ]);
     act(() => match.unmount());
 
-    // That bet shows up on top of the mock ones
+    // The refetched bet shows up in My Bets
     const bets = mount(
       <MyBetsScreen
-        placedBets={[
-          {
-            id: 'BET900',
-            status: 'open',
-            match: 'Mumbai Indians vs Chennai Super Kings',
-            selection: 'Kings',
-            odds: 2.3,
-            stake: 500,
-            cashOut: 1035,
-          },
+        bets={[
+          toBet(
+            bet({
+              _id: '64f00000000000000000bb90',
+              selection: 'Chennai Super Kings',
+              odds: 2.05,
+              stake: 500,
+            }),
+          ),
         ]}
       />,
     );
-    expect(renderedText(bets)).toContain('BET900');
-    expect(renderedText(bets)).toContain('Open (4)');
+    expect(renderedText(bets)).toContain('BET00BB90');
+    expect(renderedText(bets)).toContain('Open (1)');
 
     act(() => bets.unmount());
   });
 
   it('opens notifications from the home header bell', () => {
     let opened = 0;
-    const tree = mount(<HomeScreen onOpenNotifications={() => (opened += 1)} />);
+    const tree = mount(
+      <HomeScreen onOpenNotifications={() => (opened += 1)} />,
+    );
 
     const bell = tree.root
       .findAll(node => node.props?.accessibilityLabel === 'Notifications')
@@ -301,10 +499,11 @@ describe('BetPro screens', () => {
   });
 
   it('opens the search overlay from the home header', () => {
-    const tree = mount(<HomeScreen />);
-    // "Wimbledon" and "Cancel" appear only in the overlay; "IPL 2025" is also
-    // part of a match card's league line, so it can't be the precondition.
-    expect(renderedText(tree)).not.toContain('Wimbledon');
+    const opened: string[] = [];
+    const tree = mount(
+      <HomeScreen {...homeProps} onOpenMatch={id => opened.push(id)} />,
+    );
+    expect(renderedText(tree)).not.toContain('Cancel');
 
     const search = tree.root
       .findAll(node => node.props?.accessibilityLabel === 'Search')
@@ -313,93 +512,152 @@ describe('BetPro screens', () => {
 
     const text = renderedText(tree);
     expect(text).toContain('Cancel');
-    expect(text).toContain('IPL 2025');
-    expect(text).toContain('Premier League');
-    expect(text).toContain('Wimbledon');
+    // Suggestions are the matches on offer
+    expect(text).toContain('Arsenal vs Chelsea');
+
+    const suggestion = tree.root
+      .findAll(node => typeof node.props?.onPress === 'function')
+      .find(node =>
+        node
+          .findAllByType('Text' as never)
+          .some(t => t.children.includes('Arsenal vs Chelsea')),
+      );
+    act(() => suggestion?.props.onPress());
+    expect(opened).toEqual(['m2']);
 
     act(() => tree.unmount());
   });
 
-  it('renders the match screen with scoreboard, markets and stats', () => {
-    const tree = mount(<MatchScreen />);
+  it('keeps the bet slip closed until KYC is verified', () => {
+    let kycOpened = 0;
+    const tree = mount(
+      <MatchScreen
+        match={LIVE}
+        balance={4500}
+        kycVerified={false}
+        onOpenKyc={() => (kycOpened += 1)}
+      />,
+    );
+    // Prices stay visible, with the reason betting is closed
+    expect(renderedText(tree)).toContain('1.85');
+    expect(renderedText(tree)).toContain(
+      'Bet lagane ke liye KYC verified hona zaroori hai',
+    );
+
+    const odds = tree.root
+      .findAll(node =>
+        String(node.props?.accessibilityLabel ?? '').startsWith(
+          'Mumbai Indians at',
+        ),
+      )
+      .find(node => typeof node.props?.onPress === 'function');
+    act(() => odds?.props.onPress());
+    // Tapping a price leads to KYC, not to the slip
+    expect(kycOpened).toBe(1);
+    expect(
+      tree.root.findAll(
+        node => node.props?.accessibilityLabel === 'Confirm Bet',
+      ),
+    ).toHaveLength(0);
+
+    act(() => tree.unmount());
+  });
+
+  it('renders the match screen with scoreboard and markets', () => {
+    const tree = mount(<MatchScreen match={LIVE} balance={4500} />);
     const text = renderedText(tree);
 
     expect(text).toContain('Mumbai Indians vs Chennai Super Kings');
-    expect(text).toContain('186/4');
-    expect(text).toContain('142/6');
-    expect(text).toContain('15.1 Ov');
+    expect(text).toContain('142/3');
+    expect(text).toContain('16.2 Ov');
 
-    // Market tabs
-    expect(text).toContain('Match Winner');
-    expect(text).toContain('Over/Under');
+    // Market tabs from the backend
+    expect(text).toContain('Match Odds');
+    expect(text).toContain('Bookmaker');
+    expect(text).toContain('1.85');
+    expect(text).toContain('Max stake');
+    expect(text).toContain('₹50,000');
 
-    // Stats
-    expect(text).toContain('Match Statistics');
-    expect(text).toContain('Run Rate');
-    expect(text).toContain('Boundaries');
-    expect(text).toContain('Wickets');
+    // Switching market shows its own prices
+    const bookmaker = tree.root
+      .findAll(node => node.props?.accessibilityRole === 'tab')
+      .find(
+        node =>
+          typeof node.props?.onPress === 'function' &&
+          !node.props.accessibilityState?.selected,
+      );
+    act(() => bookmaker?.props.onPress());
+    expect(renderedText(tree)).toContain('1.90');
+    expect(renderedText(tree)).toContain('₹25,000');
 
     act(() => tree.unmount());
   });
 
   it('renders the My Bets open tab (Figma 7:4096)', () => {
-    const tree = mount(<MyBetsScreen />);
+    const tree = mount(<MyBetsScreen bets={BETS.map(toBet)} />);
     const text = renderedText(tree);
 
     expect(text).toContain('My Bets');
-    expect(text).toContain('Open (3)');
-    expect(text).toContain('Settled');
+    expect(text).toContain('Open (2)');
+    expect(text).toContain('Settled (2)');
 
-    // Three open bets, each with a cash-out offer
-    expect(text).toContain('BET001');
-    expect(text).toContain('BET004');
-    expect(text).toContain('BET005');
-    expect(text).toContain('₹1,332');
-    expect(text).toContain('₹2,304');
-    expect(text).toContain('₹4,500');
+    // Two open bets, each with its live cash-out offer
+    expect(text).toContain('BET00AA01');
+    expect(text).toContain('₹950');
+    expect(text).toContain('₹3,800');
 
-    // Potential = stake × odds, as printed in the frame
+    // Potential = stake × odds
     expect(text).toContain('₹1,850');
-    expect(text).toContain('₹3,200');
-    expect(text).toContain('₹6,250');
+    expect(text).toContain('₹4,200');
 
     // Settled bets are hidden on this tab
-    expect(text).not.toContain('BET002');
+    expect(text).not.toContain('Djokovic');
 
     act(() => tree.unmount());
   });
 
   it('switches to the settled tab (Figma 7:4313)', () => {
-    const tree = mount(<MyBetsScreen />);
+    const tree = mount(<MyBetsScreen bets={BETS.map(toBet)} />);
 
     const settled = tree.root
       .findAll(node => node.props?.accessibilityRole === 'tab')
-      .find(node => typeof node.props?.onPress === 'function' && !node.props.accessibilityState?.selected);
+      .find(
+        node =>
+          typeof node.props?.onPress === 'function' &&
+          !node.props.accessibilityState?.selected,
+      );
     act(() => settled?.props.onPress());
 
     const text = renderedText(tree);
-    expect(text).toContain('BET002');
+    expect(text).toContain('Djokovic');
     expect(text).toContain('Won ✓');
-    expect(text).toContain('₹725');
-    expect(text).toContain('BET003');
+    expect(text).toContain('₹1,500');
+    expect(text).toContain('Alcaraz');
     expect(text).toContain('Lost ✗');
-    expect(text).toContain('₹1,020');
+    expect(text).toContain('Return');
 
     // Open bets are hidden, and settled bets have no cash-out button
-    expect(text).not.toContain('BET001');
     expect(text).not.toContain('Cash Out');
 
     act(() => tree.unmount());
   });
 
-  it('cashes a bet out, dropping Open (3) to Open (2) (Figma 7:4461 → 7:4747)', () => {
-    const tree = mount(<MyBetsScreen />);
-    expect(renderedText(tree)).toContain('Open (3)');
+  it('cashes a bet out through the backend handler (Figma 7:4461 → 7:4747)', async () => {
+    const cashed: string[] = [];
+    const tree = mount(
+      <MyBetsScreen
+        bets={BETS.map(toBet)}
+        onCashOut={async b => {
+          cashed.push(b.id);
+          return true;
+        }}
+      />,
+    );
+    expect(renderedText(tree)).toContain('Open (2)');
 
-    // Open the cash-out sheet for BET001
     const cashOut = tree.root
       .findAll(node =>
-        node.props?.accessibilityLabel?.startsWith?.('Cash out BET001'),
+        node.props?.accessibilityLabel?.startsWith?.('Cash out BET00AA01'),
       )
       .find(node => typeof node.props?.onPress === 'function');
     act(() => cashOut?.props.onPress());
@@ -407,39 +665,35 @@ describe('BetPro screens', () => {
     // Sheet shows the offer and its share of the potential win
     const sheetText = renderedText(tree);
     expect(sheetText).toContain('Cash Out Offer');
-    expect(sheetText).toContain('₹1,332');
+    expect(sheetText).toContain('₹950');
     expect(sheetText).toContain('vs potential win of ₹1,850');
-    expect(sheetText).toContain('72%');
+    expect(sheetText).toContain('51%');
     expect(sheetText).toContain('Keep Bet');
 
-    // Confirming settles the bet — the 7:4747 state
     const confirm = tree.root
       .findAll(
-        node => node.props?.accessibilityLabel === 'Confirm cash out of ₹1,332',
+        node => node.props?.accessibilityLabel === 'Confirm cash out of ₹950',
       )
       .find(node => typeof node.props?.onPress === 'function');
-    act(() => confirm?.props.onPress());
+    await act(async () => {
+      await confirm?.props.onPress();
+    });
 
-    const after = renderedText(tree);
-    expect(after).toContain('Open (2)');
-    expect(after).not.toContain('BET001');
-    expect(after).toContain('BET004');
-    expect(after).toContain('BET005');
+    expect(cashed).toEqual(['64f00000000000000000aa01']);
+    expect(renderedText(tree)).not.toContain('Cash Out Offer');
 
     act(() => tree.unmount());
   });
 
   it('renders the live matches screen (Figma 8:19)', () => {
-    const tree = mount(<LiveScreen />);
+    const tree = mount(<LiveScreen matches={[toMatchCard(LIVE)]} />);
     const text = renderedText(tree);
 
     expect(text).toContain('Live Matches');
-    expect(text).toContain('4 matches in progress');
-    expect(text).toContain('IPL 2025 • Match 38');
-    expect(text).toContain('NBA Playoffs');
-    expect(text).toContain('Boston Celtics');
-    // Basketball has no overs, so that card falls back to the VS separator
-    expect(text).toContain('VS');
+    expect(text).toContain('1 match in progress');
+    expect(text).toContain('IPL');
+    expect(text).toContain('Mumbai Indians');
+    expect(text).toContain('16.2 Ov');
     expect(text).toContain('More matches coming soon…');
     // As a tab it's a root screen, so no back arrow
     expect(
@@ -456,7 +710,9 @@ describe('BetPro screens', () => {
       // Reached from the tab bar — root screen, no arrow
       const asTab = mount(<Screen />);
       expect(
-        asTab.root.findAll(node => node.props?.accessibilityLabel === 'Go back'),
+        asTab.root.findAll(
+          node => node.props?.accessibilityLabel === 'Go back',
+        ),
       ).toHaveLength(0);
       act(() => asTab.unmount());
 
@@ -487,24 +743,58 @@ describe('BetPro screens', () => {
   });
 
   it('renders the wallet screen (Figma 8:512)', () => {
-    const tree = mount(<WalletScreen />);
+    const tree = mount(
+      <WalletScreen
+        wallet={WALLET}
+        transactions={toWalletRows(WALLET.transactions, WALLET.requests)}
+      />,
+    );
     const text = renderedText(tree);
 
     expect(text).toContain('Wallet');
-    expect(text).toContain('₹13,282');
-    expect(text).toContain('+₹725 won today');
-    expect(text).toContain('Bonus');
-    expect(text).toContain('Referral');
+    expect(text).toContain('₹5,500');
+    expect(text).toContain('+₹500 won today');
+    expect(text).toContain('₹2,000 withdrawal pending');
+    expect(text).toContain('Available');
+    expect(text).toContain('In Open Bets');
+    expect(text).toContain('₹3,000');
     expect(text).toContain('Recent Transactions');
-    expect(text).toContain('UPI Deposit');
-    expect(text).toContain('Bank Withdrawal');
+    expect(text).toContain('Deposit • UPI');
+    expect(text).toContain('Bet Won');
+    expect(text).toContain('Withdrawal request • Bank Transfer');
     expect(text).toContain('pending');
 
     act(() => tree.unmount());
   });
 
-  it('walks the deposit flow: amount → pay → submitted (8:749 → 8:896 → 8:1045)', () => {
-    const tree = mount(<DepositScreen />);
+  it('walks the deposit flow: amount → pay → submitted (8:749 → 8:896 → 8:1045)', async () => {
+    // The picker menu ("Choose from Gallery / Camera") picks the gallery, which returns one photo.
+    const alert = jest
+      .spyOn(Alert, 'alert')
+      .mockImplementation((_title, _message, buttons) => {
+        buttons?.find(b => b.text === 'Choose from Gallery')?.onPress?.();
+      });
+    (launchImageLibrary as jest.Mock).mockImplementation((_opts, callback) =>
+      callback({
+        assets: [
+          {base64: 'AAAA', type: 'image/png', fileName: 'gpay_receipt.png'},
+        ],
+      }),
+    );
+    const submitted: Array<{
+      amount: number;
+      method: string;
+      reference: string;
+      proof: {name: string; data: string};
+    }> = [];
+    const tree = mount(
+      <DepositScreen
+        onSubmit={async request => {
+          submitted.push(request);
+          return 'DEP1A2B3C4D';
+        }}
+      />,
+    );
 
     // Step 1 — CTA is disabled and shows the placeholder amount
     expect(renderedText(tree)).toContain('Pay ₹— via PhonePe');
@@ -517,7 +807,6 @@ describe('BetPro screens', () => {
         .find(node => node.props?.accessibilityLabel?.startsWith?.('Pay '));
     expect(payCta()?.props.accessibilityState).toEqual({disabled: true});
 
-    // Entering an amount enables it and updates the label
     const amountInput = tree.root
       .findAllByType('TextInput' as never)
       .find(node => node.props?.accessibilityLabel === 'Deposit amount');
@@ -532,35 +821,107 @@ describe('BetPro screens', () => {
     expect(payText).toContain('Scan QR to pay ₹1,000');
     expect(payText).toContain('betpro@upi');
     expect(payText).toContain("I've Paid ₹1,000");
-    expect(payText).toContain('← Change Method');
 
-    // Step 3 — confirmation carries amount and method through
-    const paid = tree.root
+    // The transaction id is compulsory: without it nothing is filed
+    const paid = () =>
+      tree.root
+        .findAll(
+          node => node.props?.accessibilityLabel === 'I have paid ₹1,000',
+        )
+        .find(node => typeof node.props?.onPress === 'function');
+    expect(paid()?.props.accessibilityState).toEqual({disabled: true});
+    await act(async () => {
+      await paid()?.props.onPress();
+    });
+    expect(submitted).toEqual([]);
+    expect(renderedText(tree)).toContain('Transaction ID daalna zaroori hai');
+
+    const txnInput = () =>
+      tree.root
+        .findAllByType('TextInput' as never)
+        .find(node => node.props?.accessibilityLabel === 'Transaction ID');
+    act(() => txnInput()?.props.onChangeText('ab 12'));
+    expect(txnInput()?.props.value).toBe('AB12');
+    expect(renderedText(tree)).toContain('kam se kam 6 characters');
+    await act(async () => {
+      await paid()?.props.onPress();
+    });
+    expect(submitted).toEqual([]);
+
+    // A valid id alone isn't enough: the payment screenshot is compulsory too
+    act(() => txnInput()?.props.onChangeText('utr-4321 9876'));
+    expect(paid()?.props.accessibilityState).toEqual({disabled: true});
+    await act(async () => {
+      await paid()?.props.onPress();
+    });
+    expect(submitted).toEqual([]);
+    expect(renderedText(tree)).toContain(
+      'Payment ka screenshot lagana zaroori hai',
+    );
+
+    const upload = tree.root
       .findAll(
-        node => node.props?.accessibilityLabel === 'I have paid ₹1,000',
+        node =>
+          node.props?.accessibilityLabel ===
+          'Upload Karo: Payment ka Screenshot',
       )
       .find(node => typeof node.props?.onPress === 'function');
-    act(() => paid?.props.onPress());
+    act(() => upload?.props.onPress());
+    expect(renderedText(tree)).toContain('gpay_receipt.png');
+    expect(renderedText(tree)).toContain('Upload ho gaya ✓');
+    expect(renderedText(tree)).not.toContain(
+      'Payment ka screenshot lagana zaroori hai',
+    );
 
+    // Step 3 — the request is filed and its reference shown
+    expect(paid()?.props.accessibilityState).toEqual({disabled: false});
+    await act(async () => {
+      await paid()?.props.onPress();
+    });
+
+    expect(submitted).toEqual([
+      {
+        amount: 1000,
+        method: 'PhonePe',
+        reference: 'UTR43219876',
+        proof: {
+          name: 'gpay_receipt.png',
+          data: 'data:image/png;base64,AAAA',
+        },
+      },
+    ]);
+    alert.mockRestore();
     const doneText = renderedText(tree);
     expect(doneText).toContain('Deposit Submitted!');
-    expect(doneText).toContain('Your ₹1,000 deposit is being verified');
-    expect(doneText).toContain('Pending Verification');
+    expect(doneText).toContain('waiting for approval');
+    expect(doneText).toContain('Attached ✓');
+    expect(doneText).toContain('DEP1A2B3C4D');
     expect(doneText).toContain('Back to Wallet');
 
     act(() => tree.unmount());
   });
 
-  it('walks the withdraw flow: form → confirm → requested (8:1112 → 8:1218 → 8:1280)', () => {
-    const tree = mount(<WithdrawScreen />);
+  it('walks the withdraw flow: form → confirm → requested (8:1112 → 8:1218 → 8:1280)', async () => {
+    const submitted: Array<{
+      amount: number;
+      method: string;
+      reference: string;
+    }> = [];
+    const tree = mount(
+      <WithdrawScreen
+        available={4500}
+        kycVerified
+        onSubmit={async request => {
+          submitted.push(request);
+          return 'WIT9F8E7D6C';
+        }}
+      />,
+    );
 
     expect(renderedText(tree)).toContain('Withdraw');
-    expect(renderedText(tree)).toContain('Available: ₹14,282');
+    expect(renderedText(tree)).toContain('Available: ₹4,500');
     expect(renderedText(tree)).toContain('UPI / Wallet');
     expect(renderedText(tree)).toContain('Bank Transfer');
-    expect(renderedText(tree)).toContain(
-      '⚠️ Withdrawals are processed within 24 hours. Minimum withdrawal is ₹500.',
-    );
 
     const cta = () =>
       tree.root
@@ -586,22 +947,52 @@ describe('BetPro screens', () => {
     expect(confirmText).toContain('Confirm Withdrawal');
     expect(confirmText).toContain('₹1,000');
     expect(confirmText).toContain('Mithu@YBl');
-    expect(confirmText).toContain('Within 24 hours');
-    expect(confirmText).toContain('Edit');
 
-    // Step 3
+    // Step 3 — the request is filed
     const confirm = tree.root
       .findAll(node => node.props?.accessibilityLabel === 'Confirm withdraw')
       .find(node => typeof node.props?.onPress === 'function');
-    act(() => confirm?.props.onPress());
+    await act(async () => {
+      await confirm?.props.onPress();
+    });
 
+    expect(submitted).toEqual([
+      {amount: 1000, method: 'UPI', reference: 'Mithu@YBl'},
+    ]);
     const doneText = renderedText(tree);
     expect(doneText).toContain('Withdrawal Requested!');
-    expect(doneText).toContain('₹1,000 will be credited within 24 hours');
-    expect(doneText).toContain('Processing');
+    expect(doneText).toContain('once your agent approves it');
+    expect(doneText).toContain('WIT9F8E7D6C');
     expect(doneText).toContain('Back to Wallet');
 
     act(() => tree.unmount());
+  });
+
+  it('blocks withdrawals until KYC is verified, and above the available balance', () => {
+    const tree = mount(<WithdrawScreen available={4500} kycVerified={false} />);
+    expect(renderedText(tree)).toContain('KYC verified hona zaroori hai');
+
+    const amountInput = tree.root
+      .findAllByType('TextInput' as never)
+      .find(node => node.props?.accessibilityLabel === 'Withdrawal amount');
+    act(() => amountInput?.props.onChangeText('1000'));
+    const upiInput = tree.root
+      .findAllByType('TextInput' as never)
+      .find(node => node.props?.accessibilityLabel === 'UPI ID');
+    act(() => upiInput?.props.onChangeText('me@upi'));
+    const continueCta = tree.root
+      .findAll(node => node.props?.accessibilityRole === 'button')
+      .find(node => node.props?.accessibilityLabel === 'Continue');
+    expect(continueCta?.props.accessibilityState).toEqual({disabled: true});
+    act(() => tree.unmount());
+
+    const verified = mount(<WithdrawScreen available={4500} kycVerified />);
+    const input = verified.root
+      .findAllByType('TextInput' as never)
+      .find(node => node.props?.accessibilityLabel === 'Withdrawal amount');
+    act(() => input?.props.onChangeText('9000'));
+    expect(renderedText(verified)).toContain('Insufficient balance');
+    act(() => verified.unmount());
   });
 
   it('hides the UPI field when Bank Transfer is chosen', () => {
@@ -619,14 +1010,25 @@ describe('BetPro screens', () => {
   });
 
   it('renders the profile screen and its logout sheet (8:1346 → 9:1070)', () => {
-    const tree = mount(<ProfileScreen />);
+    const tree = mount(
+      <ProfileScreen
+        name="Rahul Verma"
+        referralCode="DEMORAH123"
+        stats={profileStats(BETS)}
+      />,
+    );
     const text = renderedText(tree);
 
-    expect(text).toContain('Rahul Kumar');
-    expect(text).toContain('🥇 Gold Member');
-    expect(text).toContain('RAHUL2025');
-    expect(text).toContain('59.6%');
-    expect(text).toContain('Refer & Earn');
+    expect(text).toContain('Rahul Verma');
+    expect(text).toContain('DEMORAH123');
+    // 4 bets, 1 won of 2 settled
+    expect(text).toContain('Total Bets');
+    expect(text).toContain('50.0%');
+    expect(text).toContain('Refer a Friend');
+    // Nothing the platform doesn't actually offer
+    expect(text).not.toContain('Gold Member');
+    expect(text).not.toContain('₹250');
+    expect(text).toContain('KYC baaki hai');
     expect(text).toContain('Help & Support');
     expect(text).not.toContain('Log Out?');
 
@@ -651,34 +1053,74 @@ describe('BetPro screens', () => {
     expect(text).toContain('Change Photo');
     expect(text).toContain('Full Name');
     expect(text).toContain('Date of Birth');
-    expect(text).toContain('Verified');
+    // The mobile isn't OTP-checked, so it isn't called verified
+    expect(text).not.toContain('Verified');
     expect(text).toContain('Save Changes');
 
     act(() => tree.unmount());
   });
 
   it('renders the referral screen (9:92)', () => {
-    const tree = mount(<ReferralScreen />);
+    const tree = mount(<ReferralScreen referralCode="DEMORAH123" />);
     const text = renderedText(tree);
 
-    expect(text).toContain('Refer & Earn');
+    expect(text).toContain('Refer a Friend');
+    expect(text).not.toContain('₹250');
     expect(text).toContain('Invite Friends,');
-    expect(text).toContain('RAHUL2025');
+    expect(text).toContain('DEMORAH123');
     expect(text).toContain('WhatsApp');
     expect(text).toContain('How it works');
-    expect(text).toContain('Your Referrals (4)');
-    expect(text).toContain('Amit Sharma');
-    expect(text).toContain('Top Referrer This Month');
 
     act(() => tree.unmount());
   });
 
-  it('marks notifications read (9:340)', () => {
-    const tree = mount(<NotificationsScreen />);
-    expect(renderedText(tree)).toContain('MIvCSK — Score Update');
-    expect(renderedText(tree)).toContain('Login Alert');
+  it('lists the feed, opens a row and marks all read (9:340)', () => {
+    const rows = [
+      {
+        id: 'n1',
+        emoji: '💰',
+        title: 'Deposit Successful',
+        body: '₹5,000 credited to your wallet',
+        time: '2 min ago',
+        unread: true,
+        link: 'wallet' as const,
+      },
+      {
+        id: 'n2',
+        emoji: '🏆',
+        title: 'Bet Won!',
+        body: 'Man City bet — ₹725 credited',
+        time: 'Yesterday',
+        unread: true,
+        link: 'bets' as const,
+      },
+      {
+        id: 'n3',
+        emoji: '🔐',
+        title: 'Login Alert',
+        body: 'New login from Android device',
+        time: '12 Jul',
+        unread: false,
+        link: 'profile' as const,
+      },
+    ];
+    const opened: string[] = [];
+    let markedAll = 0;
+    const tree = mount(
+      <NotificationsScreen
+        notifications={rows}
+        onOpen={item => opened.push(`${item.id}:${item.link}`)}
+        onMarkAllRead={() => (markedAll += 1)}
+      />,
+    );
+    const text = renderedText(tree);
+    expect(text).toContain('Deposit Successful');
+    expect(text).toContain('₹5,000 credited to your wallet');
+    expect(text).toContain('2 min ago');
+    expect(text).toContain('Login Alert');
+    // Nothing from the old Figma placeholder list
+    expect(text).not.toContain('MIvCSK');
 
-    // Two items are unread in the frame; "Mark all read" clears both dots.
     // `typeof type === 'string'` keeps host views only — findAll would
     // otherwise count each dot twice (composite + host).
     const dots = () =>
@@ -688,13 +1130,47 @@ describe('BetPro screens', () => {
       ).length;
     expect(dots()).toBe(2);
 
-    const markAll = tree.root
-      .findAll(node => node.props?.accessibilityRole === 'button')
-      .find(node => typeof node.props?.onPress === 'function');
-    act(() => markAll?.props.onPress());
+    const button = (label: string) =>
+      tree.root
+        .findAll(node => node.props?.accessibilityLabel === label)
+        .find(node => typeof node.props?.onPress === 'function');
+    act(() => button('Bet Won!')?.props.onPress());
+    expect(opened).toEqual(['n2:bets']);
+
+    act(() => button('Mark all read')?.props.onPress());
+    expect(markedAll).toBe(1);
+
+    // The dots follow the feed it is given
+    act(() =>
+      tree.update(
+        <NotificationsScreen
+          notifications={rows.map(row => ({...row, unread: false}))}
+        />,
+      ),
+    );
     expect(dots()).toBe(0);
+    const markAll = tree.root
+      .findAll(node => node.props?.accessibilityLabel === 'Mark all read')
+      .find(node => node.props?.accessibilityState);
+    expect(markAll?.props.accessibilityState).toEqual({disabled: true});
 
     act(() => tree.unmount());
+  });
+
+  it('shows an empty feed note instead of placeholder rows', () => {
+    const tree = mount(<NotificationsScreen />);
+    expect(renderedText(tree)).toContain('Abhi koi notification nahi hai');
+    act(() => tree.unmount());
+  });
+
+  it('words notification times like the frame', () => {
+    const now = new Date('2026-07-14T18:00:00+05:30');
+    expect(timeAgo('2026-07-14T17:59:40+05:30', now)).toBe('Just now');
+    expect(timeAgo('2026-07-14T17:58:00+05:30', now)).toBe('2 min ago');
+    expect(timeAgo('2026-07-14T17:00:00+05:30', now)).toBe('1 hr ago');
+    expect(timeAgo('2026-07-14T13:00:00+05:30', now)).toBe('5 hrs ago');
+    expect(timeAgo('2026-07-13T15:00:00+05:30', now)).toBe('Yesterday');
+    expect(timeAgo('2026-07-12T15:00:00+05:30', now)).toMatch(/12 Jul/);
   });
 
   it('toggles settings switches and language (9:451)', () => {
@@ -721,6 +1197,49 @@ describe('BetPro screens', () => {
     act(() => tree.unmount());
   });
 
+  it('shows the saved notification switches and saves a change', async () => {
+    const saved: Array<[string, boolean]> = [];
+    const tree = mount(
+      <SettingsScreen
+        preferences={{notifyMoney: false}}
+        onTogglePreference={async (id, value) => {
+          saved.push([id, value]);
+          // The second save fails, so that switch has to go back.
+          return saved.length === 1;
+        }}
+      />,
+    );
+    const toggle = (label: string) =>
+      tree.root
+        .findAll(node => node.props?.accessibilityLabel === label)
+        .find(node => typeof node.props?.onPress === 'function');
+
+    expect(toggle('Deposits & Withdrawals')?.props.accessibilityState).toEqual(
+      {checked: false},
+    );
+    expect(toggle('Security Alerts')?.props.accessibilityState).toEqual({
+      checked: true,
+    });
+
+    await act(async () => {
+      await toggle('Deposits & Withdrawals')?.props.onPress();
+    });
+    expect(saved).toEqual([['notifyMoney', true]]);
+    expect(toggle('Deposits & Withdrawals')?.props.accessibilityState).toEqual(
+      {checked: true},
+    );
+
+    await act(async () => {
+      await toggle('Security Alerts')?.props.onPress();
+    });
+    expect(saved[1]).toEqual(['notifySecurity', false]);
+    expect(toggle('Security Alerts')?.props.accessibilityState).toEqual({
+      checked: true,
+    });
+
+    act(() => tree.unmount());
+  });
+
   it('switches help tabs and expands an FAQ (9:613 → 9:695 → 9:783 → 9:889)', () => {
     const tree = mount(<HelpScreen />);
     expect(renderedText(tree)).toContain('How do I deposit money?');
@@ -728,7 +1247,9 @@ describe('BetPro screens', () => {
 
     // Expanding the first FAQ reveals its answer (9:695)
     const faq = tree.root
-      .findAll(node => node.props?.accessibilityLabel === 'How do I deposit money?')
+      .findAll(
+        node => node.props?.accessibilityLabel === 'How do I deposit money?',
+      )
       .find(node => typeof node.props?.onPress === 'function');
     act(() => faq?.props.onPress());
     expect(renderedText(tree)).toContain('Go to Wallet → Deposit');
@@ -781,7 +1302,9 @@ describe('BetPro screens', () => {
 
   it('fires the settings legal rows', () => {
     const opened: string[] = [];
-    const tree = mount(<SettingsScreen onOpenLink={link => opened.push(link)} />);
+    const tree = mount(
+      <SettingsScreen onOpenLink={link => opened.push(link)} />,
+    );
 
     for (const label of ['Privacy Policy', 'Terms & Conditions']) {
       const row = tree.root
@@ -809,7 +1332,8 @@ describe('BetPro screens', () => {
     expect(text).not.toContain('Aapka Poora Naam');
     expect(text).toContain('(Optional)');
     // The bonus pill only appears once a referral code is typed
-    expect(text).not.toContain('+₹50 Bonus');
+    expect(text).not.toContain('Code ✓');
+    expect(text).not.toContain('Bonus');
 
     const cta = () =>
       tree.root
@@ -822,7 +1346,8 @@ describe('BetPro screens', () => {
       .findAllByType('TextInput' as never)
       .find(node => node.props?.accessibilityLabel === 'Referral code');
     act(() => refInput?.props.onChangeText('MITHU12345'));
-    expect(renderedText(tree)).toContain('+₹50 Bonus');
+    expect(renderedText(tree)).toContain('Code ✓');
+    expect(renderedText(tree)).not.toContain('Bonus');
 
     const consent = tree.root
       .findAll(
@@ -940,18 +1465,35 @@ describe('BetPro screens', () => {
   });
 
   it('recomputes the bet slip payout from the stake', () => {
-    const tree = mount(<BetSlipSheet visible onClose={() => {}} />);
+    const tree = mount(
+      <BetSlipSheet
+        visible
+        balance={4500}
+        league="IPL"
+        match="Mumbai Indians vs Chennai Super Kings"
+        isLive
+        selection="Mumbai Indians"
+        odds={1.72}
+        onClose={() => {}}
+      />,
+    );
 
-    // Default ₹500 at 1.72 → ₹860, the figure printed in the Figma frame.
+    // Default ₹500 at 1.72 → ₹860
     expect(renderedText(tree)).toContain('₹860');
-    expect(renderedText(tree)).toContain('₹12,450');
+    expect(renderedText(tree)).toContain('₹4,500');
+    expect(renderedText(tree)).toContain(
+      'Mumbai Indians vs Chennai Super Kings',
+    );
 
     const stakeInput = tree.root
       .findAllByType('TextInput' as never)
       .find(node => node.props?.accessibilityLabel === 'Stake amount');
     act(() => stakeInput?.props.onChangeText('1000'));
-
     expect(renderedText(tree)).toContain('₹1,720');
+
+    // More than the available balance can't be confirmed
+    act(() => stakeInput?.props.onChangeText('5000'));
+    expect(renderedText(tree)).toContain('Insufficient balance');
 
     act(() => tree.unmount());
   });

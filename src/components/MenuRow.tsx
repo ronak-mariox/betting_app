@@ -11,6 +11,8 @@ export type MenuItem = {
   hint?: string;
   /** Icon-well tint; defaults to the cyan well. */
   wellColor?: string;
+  /** Recolours a glyph exported in another colour (e.g. the KYC shield). */
+  iconColor?: string;
 };
 
 type MenuRowProps = {
@@ -37,7 +39,7 @@ export const MenuRow = ({item, showDivider = true, onPress}: MenuRowProps) => (
         styles.well,
         {backgroundColor: item.wellColor ?? colors.wellMenu},
       ]}>
-      <Icon name={item.icon} />
+      <Icon name={item.icon} color={item.iconColor} />
     </View>
 
     <View style={styles.copy}>

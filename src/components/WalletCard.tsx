@@ -47,56 +47,56 @@ export const WalletCard = ({
     <View style={styles.decorCircle} pointerEvents="none" />
 
     <View style={styles.inner}>
-    <View style={styles.labelRow}>
-      <Text style={type.walletLabel}>Wallet Balance</Text>
-      <Pressable
-        onPress={onToggleVisibility}
-        hitSlop={spacing.lg}
-        accessibilityRole="button"
-        accessibilityState={{expanded: !balanceHidden}}
-        accessibilityLabel={
-          balanceHidden ? 'Show wallet balance' : 'Hide wallet balance'
-        }>
-        <Icon name="eye" />
+      <View style={styles.labelRow}>
+        <Text style={type.walletLabel}>Wallet Balance</Text>
+        <Pressable
+          onPress={onToggleVisibility}
+          hitSlop={spacing.lg}
+          accessibilityRole="button"
+          accessibilityState={{expanded: !balanceHidden}}
+          accessibilityLabel={
+            balanceHidden ? 'Show wallet balance' : 'Hide wallet balance'
+          }>
+          <Icon name="eye" />
+        </Pressable>
+      </View>
+
+      <Pressable onPress={onPressBalance} style={styles.balanceBlock}>
+        <Text style={type.balance}>{balance}</Text>
+        <Text style={[type.walletHint, styles.hint]}>{hint}</Text>
       </Pressable>
-    </View>
 
-    <Pressable onPress={onPressBalance} style={styles.balanceBlock}>
-      <Text style={type.balance}>{balance}</Text>
-      <Text style={[type.walletHint, styles.hint]}>{hint}</Text>
-    </Pressable>
+      <View style={styles.statsRow}>
+        {stats.map(stat => (
+          <View key={stat.label} style={styles.stat}>
+            <Text style={type.statLabel}>{stat.label}</Text>
+            <Text
+              style={[
+                type.statValue,
+                {color: stat.color ?? colors.textPrimary},
+              ]}>
+              {stat.value}
+            </Text>
+          </View>
+        ))}
+      </View>
 
-    <View style={styles.statsRow}>
-      {stats.map(stat => (
-        <View key={stat.label} style={styles.stat}>
-          <Text style={type.statLabel}>{stat.label}</Text>
-          <Text
-            style={[
-              type.statValue,
-              {color: stat.color ?? colors.textPrimary},
-            ]}>
-            {stat.value}
-          </Text>
-        </View>
-      ))}
-    </View>
-
-    <View style={styles.actions}>
-      <Button
-        variant="glass"
-        icon="plus"
-        label="Deposit"
-        onPress={onDeposit}
-        style={styles.action}
-      />
-      <Button
-        variant="glassSoft"
-        icon="minus"
-        label="Withdraw"
-        onPress={onWithdraw}
-        style={styles.action}
-      />
-    </View>
+      <View style={styles.actions}>
+        <Button
+          variant="glass"
+          icon="plus"
+          label="Deposit"
+          onPress={onDeposit}
+          style={styles.action}
+        />
+        <Button
+          variant="glassSoft"
+          icon="minus"
+          label="Withdraw"
+          onPress={onWithdraw}
+          style={styles.action}
+        />
+      </View>
     </View>
   </Card>
 );

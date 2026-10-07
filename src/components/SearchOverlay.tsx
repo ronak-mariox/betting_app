@@ -1,11 +1,5 @@
 import React, {useState} from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {colors, hairline, scale, spacing, type} from '../theme';
 import {Icon} from './Icon';
@@ -30,6 +24,10 @@ export const SearchOverlay = ({
 }: SearchOverlayProps) => {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
+  const wanted = query.trim().toLowerCase();
+  const results = wanted
+    ? suggestions.filter(item => item.toLowerCase().includes(wanted))
+    : suggestions;
 
   return (
     <View style={styles.overlay}>
@@ -56,7 +54,14 @@ export const SearchOverlay = ({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         style={styles.list}>
-        {suggestions.map(suggestion => (
+        {results.length === 0 ? (
+          <Text style={[type.suggestion, styles.none]}>
+            {suggestions.length === 0
+              ? 'Abhi koi match nahi hai'
+              : `"${query.trim()}" naam ka koi match nahi mila`}
+          </Text>
+        ) : null}
+        {results.map(suggestion => (
           <Pressable
             key={suggestion}
             onPress={() => onSelect?.(suggestion)}
@@ -72,6 +77,11 @@ export const SearchOverlay = ({
 };
 
 const styles = StyleSheet.create({
+  none: {
+    paddingHorizontal: spacing.gutter, // 16
+    paddingVertical: spacing.xl, // 16
+    color: colors.textDim,
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.bgDeep,

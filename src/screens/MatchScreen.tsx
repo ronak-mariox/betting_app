@@ -6,39 +6,54 @@ import {
   Button,
   Card,
   ChipBar,
+  InfoCallout,
   Scoreboard,
-  StatComparisonRow,
 } from '../components';
-import {matchDetail, matchStats} from '../data/match';
-import {notify} from '../utils/actions';
+import type {ApiMatch} from '../services/api';
+import {kickoff, rupees, splitScore} from '../utils/feed';
 import {colors, hairline, radius, scale, spacing, type} from '../theme';
 import {BetSlipSheet} from './BetSlipSheet';
 
 type MatchScreenProps = {
+  /** The match as last fetched; the screen shows an empty state while it's missing. */
+  match?: ApiMatch | null;
   onBack?: () => void;
-  /** Live wallet balance in rupees; the slip gates the stake on it. */
+  /** Available balance in rupees (wallet minus open stakes); the slip gates the stake on it. */
   balance?: number;
-  /** Fires with the confirmed bet so it can join My Bets. */
+  /** Betting is open only to players whose KYC is verified. */
+  kycVerified?: boolean;
+  /** The KYC note (shown while unverified) opens the player's KYC screen. */
+  onOpenKyc?: () => void;
+  /** Places the bet on the backend; resolves true once it's accepted. */
   onPlaceBet?: (bet: {
-    match: string;
+    marketId: string;
     selection: string;
-    odds: number;
     stake: number;
-  }) => void;
+  }) => Promise<boolean>;
 };
 
 /** Match detail — Figma node 7:3617. Tapping an odds button opens the bet slip. */
 export const MatchScreen = ({
+  match,
   onBack,
-  balance,
+  balance = 0,
+  kycVerified = true,
+  onOpenKyc,
   onPlaceBet,
 }: MatchScreenProps) => {
   const insets = useSafeAreaInsets();
-  const [market, setMarket] = useState(matchDetail.markets[0]);
+  const markets = match?.markets ?? [];
+  const [marketName, setMarketName] = useState(markets[0]?.name ?? '');
+  const market = markets.find(m => m.name === marketName) ?? markets[0];
   /** The odds button that opened the slip — null while it's closed. */
-  const [selected, setSelected] = useState<{team: string; value: string} | null>(
-    null,
-  );
+  const [selected, setSelected] = useState<{
+    name: string;
+    odds: number;
+  } | null>(null);
+  const [placing, setPlacing] = useState(false);
+
+  const isLive = match?.status === 'Live';
+  const {score, overs} = splitScore(match?.score ?? '');
 
   return (
     <View style={styles.screen}>
@@ -56,74 +71,117 @@ export const MatchScreen = ({
               accessibilityLabel="Go back"
             />
             <View style={styles.titleCopy}>
-              <Text style={type.league}>{matchDetail.league}</Text>
-              <Text style={type.matchTitle}>{matchDetail.title}</Text>
+              <Text style={type.league}>{match?.league ?? ''}</Text>
+              <Text style={type.matchTitle}>{match?.name ?? 'Match'}</Text>
             </View>
-            {matchDetail.isLive ? <Badge label="LIVE" /> : null}
+            {isLive ? <Badge label="LIVE" /> : null}
           </View>
 
-          <View style={styles.scoreboardWrap}>
-            <Scoreboard
-              home={matchDetail.home}
-              away={matchDetail.away}
-              isLive={matchDetail.isLive}
-            />
-          </View>
+          {match ? (
+            <View style={styles.scoreboardWrap}>
+              <Scoreboard
+                home={{
+                  name: match.home,
+                  score: isLive ? score || '—' : '—',
+                  meta: isLive ? overs : kickoff(match.startTime),
+                }}
+                away={{name: match.away, score: '—'}}
+                isLive={isLive}
+              />
+            </View>
+          ) : null}
         </View>
 
         <ChipBar
-          items={matchDetail.markets}
-          activeItem={market}
-          onChange={setMarket}
+          items={markets.map(m => m.name)}
+          activeItem={market?.name ?? ''}
+          onChange={setMarketName}
         />
 
         <View style={styles.body}>
-          <Card contentStyle={styles.oddsCard}>
-            {matchDetail.odds.map(odd => (
-              <Pressable
-                key={odd.team}
-                onPress={() => setSelected({team: odd.team, value: odd.value})}
-                accessibilityRole="button"
-                accessibilityLabel={`${odd.team} at ${odd.value}`}
-                android_ripple={{color: colors.borderOdds}}
-                style={({pressed}) => [
-                  styles.oddsButton,
-                  pressed && styles.pressed,
-                ]}>
-                <Text style={type.oddsTeamLg}>{odd.team}</Text>
-                <Text style={[type.oddsValueLg, styles.oddsValue]}>
-                  {odd.value}
-                </Text>
-              </Pressable>
-            ))}
-          </Card>
+          {market && !kycVerified ? (
+            <Pressable
+              onPress={onOpenKyc}
+              accessibilityRole="button"
+              accessibilityLabel="KYC verify karo">
+              <InfoCallout
+                tone="warning"
+                body="Bet lagane ke liye KYC verified hona zaroori hai. Tap karke KYC karo."
+              />
+            </Pressable>
+          ) : null}
+          {market ? (
+            <>
+              <Card contentStyle={styles.oddsCard}>
+                {market.runners.map(runner => (
+                  <Pressable
+                    key={runner.name}
+                    // Without KYC the prices can be seen, not taken.
+                    onPress={() =>
+                      kycVerified ? setSelected(runner) : onOpenKyc?.()
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`${runner.name} at ${runner.odds.toFixed(2)}`}
+                    android_ripple={{color: colors.borderOdds}}
+                    style={({pressed}) => [
+                      styles.oddsButton,
+                      !kycVerified && styles.locked,
+                      pressed && styles.pressed,
+                    ]}>
+                    <Text style={type.oddsTeamLg} numberOfLines={1}>
+                      {runner.name}
+                    </Text>
+                    <Text style={[type.oddsValueLg, styles.oddsValue]}>
+                      {runner.odds.toFixed(2)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </Card>
 
-          <Card style={styles.statsCard} contentStyle={styles.statsContent}>
-            <Text style={type.cardTitle}>Match Statistics</Text>
-            {matchStats.map(stat => (
-              <StatComparisonRow key={stat.label} stat={stat} />
-            ))}
-          </Card>
+              <Card style={styles.infoCard} contentStyle={styles.infoContent}>
+                <Text style={type.cardTitle}>{market.name}</Text>
+                <View style={styles.infoRow}>
+                  <Text style={type.statText}>Max stake</Text>
+                  <Text style={type.summaryValue}>{rupees(market.maxBet)}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={type.statText}>Available to bet</Text>
+                  <Text style={type.summaryValue}>{rupees(balance)}</Text>
+                </View>
+              </Card>
+            </>
+          ) : (
+            <Text style={[type.emptyNote, styles.empty]}>
+              Is match par abhi koi market open nahi hai
+            </Text>
+          )}
         </View>
       </ScrollView>
 
       <BetSlipSheet
         visible={selected !== null}
         balance={balance}
-        selection={selected?.team}
-        odds={selected ? Number(selected.value) : undefined}
+        league={match?.league}
+        match={match?.name}
+        isLive={isLive}
+        selection={selected?.name}
+        odds={selected?.odds}
+        busy={placing}
         onClose={() => setSelected(null)}
-        onConfirm={stake => {
-          if (selected) {
-            onPlaceBet?.({
-              match: matchDetail.title,
-              selection: selected.team,
-              odds: Number(selected.value),
-              stake,
-            });
+        onConfirm={async stake => {
+          if (!selected || !market || !onPlaceBet) {
+            return;
           }
-          setSelected(null);
-          notify('Bet lag gaya — My Bets mein dekho');
+          setPlacing(true);
+          const ok = await onPlaceBet({
+            marketId: market._id,
+            selection: selected.name,
+            stake,
+          });
+          setPlacing(false);
+          if (ok) {
+            setSelected(null);
+          }
         }}
       />
     </View>
@@ -131,6 +189,9 @@ export const MatchScreen = ({
 };
 
 const styles = StyleSheet.create({
+  locked: {
+    opacity: 0.5,
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.bgDeep,
@@ -168,6 +229,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: scale(12.701),
+    paddingHorizontal: spacing.xs,
     borderRadius: radius.sm, // 14
     backgroundColor: colors.bgBase, // #0D1B2A
     borderWidth: hairline,
@@ -179,11 +241,18 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.75,
   },
-  statsCard: {
+  infoCard: {
     marginTop: spacing.lg, // 12
   },
-  statsContent: {
+  infoContent: {
     padding: scale(16.701),
-    paddingBottom: spacing.lg, // 12 — last stat row already pads above
+    gap: spacing.md,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  empty: {
+    paddingVertical: scale(32),
   },
 });

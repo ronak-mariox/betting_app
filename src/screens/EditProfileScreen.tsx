@@ -217,18 +217,13 @@ export const EditProfileScreen = ({
           />
         ) : null}
 
-        {/* Read-only verified mobile */}
+        {/* Read-only: the mobile given on the KYC form */}
         <Card contentStyle={styles.mobile}>
           <Icon name="phone" />
           <View style={styles.mobileCopy}>
             <Text style={type.fieldCaption}>Mobile Number</Text>
             <Text style={type.mobileValue}>{phone || 'Not added yet'}</Text>
           </View>
-          {phone ? (
-            <View style={styles.verifiedPill}>
-              <Text style={type.verifiedLabel}>Verified</Text>
-            </View>
-          ) : null}
         </Card>
 
         <Button

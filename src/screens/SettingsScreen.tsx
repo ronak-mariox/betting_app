@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {
   BackHeader,
@@ -7,14 +7,14 @@ import {
   SettingsRow,
   Toggle,
 } from '../components';
-import {
-  languages,
-  legalLinks,
-  notificationSettings,
-} from '../data/settings';
+import {languages, legalLinks, notificationSettings} from '../data/settings';
 import {colors, hairline, radius, scale, spacing, type} from '../theme';
 
 type SettingsScreenProps = {
+  /** Saved notification switches from the account; one never touched is on. */
+  preferences?: Record<string, boolean>;
+  /** Saves a switch; resolves to false if it couldn't be saved, and the switch goes back. */
+  onTogglePreference?: (id: string, value: boolean) => Promise<boolean>;
   onBack?: () => void;
   onLogout?: () => void;
   /** Legal rows — "Privacy Policy" / "Terms & Conditions". */
@@ -23,14 +23,30 @@ type SettingsScreenProps = {
 
 /** Settings — Figma node 9:451. */
 export const SettingsScreen = ({
+  preferences,
+  onTogglePreference,
   onBack,
   onLogout,
   onOpenLink,
 }: SettingsScreenProps) => {
+  const saved = (source?: Record<string, boolean>) =>
+    Object.fromEntries(
+      notificationSettings.map(s => [s.id, source?.[s.id] !== false]),
+    );
   const [toggles, setToggles] = useState<Record<string, boolean>>(() =>
-    // Every switch is on in the frame.
-    Object.fromEntries(notificationSettings.map(s => [s.id, true])),
+    saved(preferences),
   );
+  useEffect(() => {
+    setToggles(saved(preferences));
+  }, [preferences]);
+
+  const toggle = async (id: string, next: boolean) => {
+    setToggles(prev => ({...prev, [id]: next}));
+    const ok = (await onTogglePreference?.(id, next)) ?? true;
+    if (!ok) {
+      setToggles(prev => ({...prev, [id]: !next}));
+    }
+  };
   const [language, setLanguage] = useState(languages[0]);
 
   return (
@@ -49,9 +65,7 @@ export const SettingsScreen = ({
               </View>
               <Toggle
                 value={toggles[setting.id]}
-                onChange={next =>
-                  setToggles(prev => ({...prev, [setting.id]: next}))
-                }
+                onChange={next => toggle(setting.id, next)}
                 accessibilityLabel={setting.label}
               />
             </SettingsRow>
@@ -83,9 +97,7 @@ export const SettingsScreen = ({
                       style={[
                         type.langPill,
                         {
-                          color: active
-                            ? colors.textPrimary
-                            : colors.textMuted,
+                          color: active ? colors.textPrimary : colors.textMuted,
                         },
                       ]}>
                       {lang}

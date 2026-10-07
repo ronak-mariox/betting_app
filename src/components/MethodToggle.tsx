@@ -19,11 +19,7 @@ type MethodToggleProps = {
  * Two-up icon + label selector — the withdrawal method switch.
  * Active is a 15% blue fill with a solid #1E88E5 hairline and cyan label.
  */
-export const MethodToggle = ({
-  options,
-  value,
-  onChange,
-}: MethodToggleProps) => (
+export const MethodToggle = ({options, value, onChange}: MethodToggleProps) => (
   <View style={styles.row}>
     {options.map(option => {
       const active = option.id === value;

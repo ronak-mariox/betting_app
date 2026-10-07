@@ -41,6 +41,49 @@ const font = (
  * `weight size/lineHeight — colour`.
  */
 export const type = StyleSheet.create({
+  /* --- KYC ------------------------------------------------------------ */
+  kycTitle: font('extraBold', 24, 32, {
+    color: colors.textPrimary,
+    textAlign: 'center',
+  }), // ExtraBold 24/32 — #FFFFFF
+  kycDoneTitle: font('extraBold', 20, 28, {
+    color: colors.textPrimary,
+    textAlign: 'center',
+  }), // ExtraBold 20/28 — #FFFFFF
+  kycSafeNote: font('regular', 11, 16.5, {
+    color: colors.textDim,
+    textAlign: 'center',
+  }), // Regular 11/16.5 — #4A6070, "safe" in #4FC3F7
+  kycStepLabel: font('semiBold', 9, 13.5, {color: colors.textDim}), // SemiBold 9/13.5 — #4A6070 (#4FC3F7 when reached)
+  kycSectionHead: font('semiBold', 12, 16, {
+    color: colors.textMuted,
+    letterSpacing: fontScale(0.6),
+    textTransform: 'uppercase',
+  }), // SemiBold 12/16 — #6B8AA0, tracking 0.6, uppercase
+  kycEdit: font('semiBold', 12, 16, {color: colors.accent}), // SemiBold 12/16 — #4FC3F7
+  kycRowLabel: font('regular', 12, 16, {color: colors.textMuted}), // Regular 12/16 — #6B8AA0
+  kycRowValue: font('medium', 12, 16, {
+    color: colors.textPrimary,
+    textAlign: 'right',
+  }), // Medium 12/16 — #FFFFFF
+  kycFileName: font('regular', 12, 16, {color: colors.textLabel}), // Regular 12/16 — #A8BFCF
+  kycUploadTitle: font('semiBold', 14, 20, {
+    color: colors.textPrimary,
+    textAlign: 'center',
+  }), // SemiBold 14/20 — #FFFFFF
+  kycUploadHint: font('medium', 11, 16.5, {
+    color: colors.textMuted,
+    textAlign: 'center',
+  }), // Medium 11/16.5 — #6B8AA0
+  kycUploadCta: font('semiBold', 12, 16, {
+    color: colors.textPrimary,
+    textAlign: 'center',
+  }), // SemiBold 12/16 — #FFFFFF
+  kycUploadedName: font('semiBold', 14, 20, {color: colors.textPrimary}), // SemiBold 14/20 — #FFFFFF
+  kycUploadedOk: font('regular', 11, 16.5, {color: colors.success}), // Regular 11/16.5 — #00C853
+  kycSummaryLabel: font('regular', 12, 16, {color: colors.textMuted}), // Regular 12/16 — #6B8AA0
+  kycSummaryValue: font('semiBold', 12, 16, {color: colors.textPrimary}), // SemiBold 12/16 — #FFFFFF
+
   /* --- Splash --------------------------------------------------------- */
   splashTitle: font('extraBold', 36, 40, {
     color: colors.textPrimary,
