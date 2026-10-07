@@ -935,7 +935,8 @@ const App = () => {
             liveMatches={liveRail}
             walletStats={todayStats(bets)}
             onOpenMatch={openMatch}
-            balance={formatRupees(wallet?.balance ?? 0)}
+            // Stakes on open bets are held, not yet debited — show what's left to use.
+            balance={formatRupees(wallet?.available ?? 0)}
             onDeposit={() => navigate('deposit')}
             onWithdraw={() => navigate('withdraw')}
             // Both rails open the Live feed — it's the only full match list built.

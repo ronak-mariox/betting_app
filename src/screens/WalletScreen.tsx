@@ -51,10 +51,10 @@ export const WalletScreen = ({
 
   const tiles = [
     {
-      id: 'available',
+      id: 'total',
       icon: 'txnIn' as const,
-      label: 'Available',
-      value: rupees(wallet?.available ?? 0),
+      label: 'Total (incl. bets)',
+      value: rupees(wallet?.balance ?? 0),
     },
     {
       id: 'inBets',
@@ -104,7 +104,7 @@ export const WalletScreen = ({
             balance={
               balanceHidden
                 ? walletSummary.hiddenBalance
-                : rupees(wallet?.balance ?? 0)
+                : rupees(wallet?.available ?? 0)
             }
             meta={meta}
             balanceHidden={balanceHidden}

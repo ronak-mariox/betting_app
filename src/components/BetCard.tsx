@@ -4,7 +4,7 @@ import {colors, hairline, radius, scale, spacing, type} from '../theme';
 import {Badge} from './Badge';
 import {Card} from './Card';
 
-export type BetStatus = 'open' | 'won' | 'lost' | 'cashed';
+export type BetStatus = 'open' | 'won' | 'lost' | 'cashed' | 'void';
 
 export type Bet = {
   id: string;
@@ -43,6 +43,11 @@ export const statusStyles: Record<
     label: 'Cashed Out',
     color: colors.accent,
     backgroundColor: colors.chipAccent,
+  },
+  void: {
+    label: 'Void',
+    color: colors.textDim,
+    backgroundColor: colors.surface,
   },
 };
 

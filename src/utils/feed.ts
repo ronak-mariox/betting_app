@@ -98,7 +98,9 @@ export function toBet(bet: ApiBet): Bet {
         ? 'won'
         : bet.status === 'Cashed Out'
           ? 'cashed'
-          : 'lost';
+          : bet.status === 'Void'
+            ? 'void'
+            : 'lost';
   return {
     id: bet._id,
     reference: `BET${bet._id.slice(-6).toUpperCase()}`,

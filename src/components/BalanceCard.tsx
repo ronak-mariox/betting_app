@@ -37,7 +37,7 @@ export const BalanceCard = ({
 
     <View style={styles.inner}>
       <View style={styles.labelRow}>
-        <Text style={type.balanceLabel}>Total Balance</Text>
+        <Text style={type.balanceLabel}>Available Balance</Text>
         <Pressable
           onPress={onToggleVisibility}
           hitSlop={spacing.lg}
