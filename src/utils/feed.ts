@@ -18,8 +18,12 @@ import {colors} from '../theme';
 export const rupees = (amount: number) =>
   `₹${Math.round(Math.abs(amount)).toLocaleString('en-IN')}`;
 
-/** "Mumbai Indians" -> "Indians": the odds buttons show the last word, as in the design. */
-const shortName = (team: string) => team.split(' ').slice(-1)[0] || team;
+/**
+ * Odds-button label: short names stay whole ("West Indies", "Sri Lanka");
+ * long ones keep the last word ("Royal Challengers Bengaluru" -> "Bengaluru").
+ */
+const shortName = (team: string) =>
+  team.length <= 13 ? team : team.split(' ').slice(-1)[0] || team;
 
 /** "142/3 (16.2)" -> {score: "142/3", overs: "16.2 Ov"}; anything else passes through. */
 export const splitScore = (score: string) => {
@@ -51,18 +55,28 @@ export function toMatchCard(match: ApiMatch): Match {
   const isLive = match.status === 'Live';
   const {score, overs} = splitScore(match.score);
   const market = match.markets[0];
-  const [home, away] = market.runners;
+  const runners = market?.runners ?? [];
+  // The two sides by name when they're there (a Test's "The Draw" is left to the match screen).
+  const home =
+    runners.find(r => r.name === match.home) ?? runners[0];
+  const away =
+    runners.find(r => r.name === match.away) ??
+    runners.find(r => r !== home && !/draw/i.test(r.name)) ??
+    home;
   const button = (
-    runner: typeof home,
+    runner: typeof home | undefined,
     label: string,
     accent: 'home' | 'away',
-  ) => ({
-    label,
-    odds: runner.odds.toFixed(2),
-    team: shortName(runner.name),
-    payout: `₹100 → ₹${Math.round(100 * runner.odds)}`,
-    accent,
-  });
+  ) => {
+    const open = runner && runner.active !== false;
+    return {
+      label,
+      odds: open ? runner.odds.toFixed(2) : '—',
+      team: runner ? shortName(runner.name) : '—',
+      payout: open ? `₹100 → ₹${Math.round(100 * runner.odds)}` : 'Suspended',
+      accent,
+    };
+  };
   return {
     id: match._id,
     sport: match.emoji || '🏟️',

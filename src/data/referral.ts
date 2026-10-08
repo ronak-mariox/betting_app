@@ -1,3 +1,5 @@
+import {brand} from '../theme/brand';
+
 /** Copy transcribed from the Figma ReferralScreen frame (node 9:92). */
 
 export const referralHeader = {
@@ -13,7 +15,7 @@ export const referralHero = {
 
 /** What the share sheet and the WhatsApp/Telegram buttons send. */
 export const referralMessage = (referralCode: string) =>
-  `BetPro join karo mere code ${referralCode} se — ` +
+  `${brand.name} join karo mere code ${referralCode} se — ` +
   'https://betpro.app/r/' +
   referralCode;
 

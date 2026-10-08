@@ -12,6 +12,7 @@ import {
   spacing,
   type,
 } from '../theme';
+import {brand} from '../theme/brand';
 
 const GLOW_SIZE = 288;
 /** Progress fill is 122.763 of a 191.997 track in Figma → 63.9%. */
@@ -82,7 +83,7 @@ export const SplashScreen = ({
               cy="144"
               r="203.65"
               gradientUnits="userSpaceOnUse">
-              <Stop offset="0" stopColor="#1E88E5" stopOpacity="1" />
+              <Stop offset="0" stopColor={colors.primary} stopOpacity="1" />
               <Stop offset="0.175" stopColor="#1766AC" stopOpacity="0.75" />
               <Stop offset="0.35" stopColor="#0F4473" stopOpacity="0.5" />
               <Stop offset="0.525" stopColor="#082239" stopOpacity="0.25" />
@@ -104,7 +105,7 @@ export const SplashScreen = ({
         </LinearGradient>
 
         <View>
-          <Text style={type.splashTitle}>BetPro</Text>
+          <Text style={type.splashTitle}>{brand.name}</Text>
           <Text style={[type.splashTagline, styles.tagline]}>
             PREMIUM BETTING
           </Text>

@@ -30,6 +30,7 @@ export {InfoCallout} from './InfoCallout';
 export {LiveMatchCard} from './LiveMatchCard';
 export type {LiveMatch} from './LiveMatchCard';
 export {MatchCard} from './MatchCard';
+export {MatchMedia} from './MatchMedia';
 export {MenuRow} from './MenuRow';
 export type {MenuItem} from './MenuRow';
 export {MethodToggle} from './MethodToggle';

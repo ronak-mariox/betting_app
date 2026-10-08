@@ -22,3 +22,6 @@ jest.mock('react-native-image-picker', () => ({
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// WebView is native; in tests the embedded score / video renders nothing.
+jest.mock('react-native-webview', () => ({WebView: () => null}));

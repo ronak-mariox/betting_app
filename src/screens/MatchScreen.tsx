@@ -7,9 +7,10 @@ import {
   Card,
   ChipBar,
   InfoCallout,
+  MatchMedia,
   Scoreboard,
 } from '../components';
-import type {ApiMatch} from '../services/api';
+import type {ApiMatch, ApiRunner} from '../services/api';
 import {kickoff, rupees, splitScore} from '../utils/feed';
 import {colors, hairline, radius, scale, spacing, type} from '../theme';
 import {BetSlipSheet} from './BetSlipSheet';
@@ -43,14 +44,38 @@ export const MatchScreen = ({
 }: MatchScreenProps) => {
   const insets = useSafeAreaInsets();
   const markets = match?.markets ?? [];
-  const [marketName, setMarketName] = useState(markets[0]?.name ?? '');
-  const market = markets.find(m => m.name === marketName) ?? markets[0];
+  // Fancy propositions ("IND Will Win Toss", …) can run to dozens, so they share one tab.
+  const fancy = markets.filter(m => m.type === 'Fancy');
+  const fancyTab = fancy.length ? `Fancy (${fancy.length})` : null;
+  const tabs = [
+    ...markets.filter(m => m.type !== 'Fancy').map(m => m.name),
+    ...(fancyTab ? [fancyTab] : []),
+  ];
+  const [tab, setTab] = useState(tabs[0] ?? '');
+  const activeTab = tabs.includes(tab) ? tab : tabs[0] ?? '';
+  const showFancy = activeTab === fancyTab;
+  const market = showFancy
+    ? undefined
+    : markets.find(m => m.name === activeTab) ?? markets[0];
   /** The odds button that opened the slip — null while it's closed. */
   const [selected, setSelected] = useState<{
+    marketId: string;
     name: string;
-    odds: number;
   } | null>(null);
   const [placing, setPlacing] = useState(false);
+  // The slip follows the live price; a selection that gets suspended closes it.
+  const selectedMarket = markets.find(m => m._id === selected?.marketId);
+  const selectedRunner = selectedMarket?.runners.find(
+    r => r.name === selected?.name,
+  );
+  const selectedOpen = Boolean(selectedRunner && selectedRunner.active !== false);
+  const pick = (marketId: string, runner: ApiRunner) => {
+    if (!kycVerified) {
+      onOpenKyc?.();
+    } else if (runner.active !== false) {
+      setSelected({marketId, name: runner.name});
+    }
+  };
 
   const isLive = match?.status === 'Live';
   const {score, overs} = splitScore(match?.score ?? '');
@@ -77,7 +102,7 @@ export const MatchScreen = ({
             {isLive ? <Badge label="LIVE" /> : null}
           </View>
 
-          {match ? (
+          {match && !(isLive && match.scoreUrl) ? (
             <View style={styles.scoreboardWrap}>
               <Scoreboard
                 home={{
@@ -90,16 +115,17 @@ export const MatchScreen = ({
               />
             </View>
           ) : null}
+          {match && isLive ? (
+            <View style={styles.scoreboardWrap}>
+              <MatchMedia scoreUrl={match.scoreUrl} streamUrl={match.streamUrl} />
+            </View>
+          ) : null}
         </View>
 
-        <ChipBar
-          items={markets.map(m => m.name)}
-          activeItem={market?.name ?? ''}
-          onChange={setMarketName}
-        />
+        <ChipBar items={tabs} activeItem={activeTab} onChange={setTab} />
 
         <View style={styles.body}>
-          {market && !kycVerified ? (
+          {(market || showFancy) && !kycVerified ? (
             <Pressable
               onPress={onOpenKyc}
               accessibilityRole="button"
@@ -110,32 +136,79 @@ export const MatchScreen = ({
               />
             </Pressable>
           ) : null}
-          {market ? (
+          {showFancy ? (
+            fancy.map(prop => {
+              const runner = prop.runners[0];
+              const open = runner && runner.active !== false;
+              return (
+                <Card
+                  key={prop._id}
+                  style={styles.fancyCard}
+                  contentStyle={styles.fancyRow}>
+                  <Text style={[type.cardTitle, styles.fancyName]}>
+                    {prop.name}
+                  </Text>
+                  {runner ? (
+                    <Pressable
+                      disabled={!open}
+                      // Without KYC the prices can be seen, not taken.
+                      onPress={() => pick(prop._id, runner)}
+                      accessibilityRole="button"
+                      accessibilityState={{disabled: !open}}
+                      accessibilityLabel={
+                        open
+                          ? `${prop.name} Yes at ${runner.odds.toFixed(2)}`
+                          : `${prop.name} suspended`
+                      }
+                      android_ripple={{color: colors.borderOdds}}
+                      style={({pressed}) => [
+                        styles.oddsButton,
+                        styles.fancyButton,
+                        (!kycVerified || !open) && styles.locked,
+                        pressed && styles.pressed,
+                      ]}>
+                      <Text style={type.oddsTeamLg}>Yes</Text>
+                      <Text style={[type.oddsValueLg, styles.oddsValue]}>
+                        {open ? runner.odds.toFixed(2) : 'SUSP'}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </Card>
+              );
+            })
+          ) : market ? (
             <>
               <Card contentStyle={styles.oddsCard}>
-                {market.runners.map(runner => (
-                  <Pressable
-                    key={runner.name}
-                    // Without KYC the prices can be seen, not taken.
-                    onPress={() =>
-                      kycVerified ? setSelected(runner) : onOpenKyc?.()
-                    }
-                    accessibilityRole="button"
-                    accessibilityLabel={`${runner.name} at ${runner.odds.toFixed(2)}`}
-                    android_ripple={{color: colors.borderOdds}}
-                    style={({pressed}) => [
-                      styles.oddsButton,
-                      !kycVerified && styles.locked,
-                      pressed && styles.pressed,
-                    ]}>
-                    <Text style={type.oddsTeamLg} numberOfLines={1}>
-                      {runner.name}
-                    </Text>
-                    <Text style={[type.oddsValueLg, styles.oddsValue]}>
-                      {runner.odds.toFixed(2)}
-                    </Text>
-                  </Pressable>
-                ))}
+                {market.runners.map(runner => {
+                  const open = runner.active !== false;
+                  return (
+                    <Pressable
+                      key={runner.name}
+                      disabled={!open}
+                      // Without KYC the prices can be seen, not taken.
+                      onPress={() => pick(market._id, runner)}
+                      accessibilityRole="button"
+                      accessibilityState={{disabled: !open}}
+                      accessibilityLabel={
+                        open
+                          ? `${runner.name} at ${runner.odds.toFixed(2)}`
+                          : `${runner.name} suspended`
+                      }
+                      android_ripple={{color: colors.borderOdds}}
+                      style={({pressed}) => [
+                        styles.oddsButton,
+                        (!kycVerified || !open) && styles.locked,
+                        pressed && styles.pressed,
+                      ]}>
+                      <Text style={type.oddsTeamLg} numberOfLines={1}>
+                        {runner.name}
+                      </Text>
+                      <Text style={[type.oddsValueLg, styles.oddsValue]}>
+                        {open ? runner.odds.toFixed(2) : 'SUSP'}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </Card>
 
               <Card style={styles.infoCard} contentStyle={styles.infoContent}>
@@ -159,22 +232,27 @@ export const MatchScreen = ({
       </ScrollView>
 
       <BetSlipSheet
-        visible={selected !== null}
+        visible={selected !== null && selectedOpen}
         balance={balance}
         league={match?.league}
         match={match?.name}
         isLive={isLive}
-        selection={selected?.name}
-        odds={selected?.odds}
+        // A fancy proposition's only selection is "Yes" — say what it's a Yes on.
+        selection={
+          selectedMarket?.type === 'Fancy'
+            ? `${selectedMarket.name}: ${selected?.name}`
+            : selected?.name
+        }
+        odds={selectedRunner?.odds}
         busy={placing}
         onClose={() => setSelected(null)}
         onConfirm={async stake => {
-          if (!selected || !market || !onPlaceBet) {
+          if (!selected || !selectedOpen || !onPlaceBet) {
             return;
           }
           setPlacing(true);
           const ok = await onPlaceBet({
-            marketId: market._id,
+            marketId: selected.marketId,
             selection: selected.name,
             stake,
           });
@@ -191,6 +269,25 @@ export const MatchScreen = ({
 const styles = StyleSheet.create({
   locked: {
     opacity: 0.5,
+  },
+  fancyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingLeft: spacing.xl,
+    paddingRight: spacing.lg,
+  },
+  fancyCard: {
+    marginBottom: spacing.md,
+  },
+  fancyName: {
+    flex: 1,
+  },
+  fancyButton: {
+    flex: 0,
+    minWidth: scale(76),
+    paddingVertical: spacing.md,
   },
   screen: {
     flex: 1,

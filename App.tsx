@@ -52,6 +52,7 @@ import {
   saveSession,
   setSessionListener,
 } from './src/services/api';
+import {applyOdds, connectRealtime} from './src/services/realtime';
 import type {
   ApiBet,
   ApiMatch,
@@ -114,6 +115,10 @@ type Route =
 
 /** How often the live screens refetch odds, scores, bets and the wallet. */
 const LIVE_REFRESH_MS = 10000;
+/** The match screen follows the feed's prices more closely. */
+const MATCH_REFRESH_MS = 4000;
+/** With the live socket up, polling is only a safety net. */
+const SOCKET_BACKUP_REFRESH_MS = 30000;
 
 /** Where a player lands after signing in: the KYC flow until they've submitted, else Home. */
 const needsKycIntro = (user: AuthSession['user']) =>
@@ -273,6 +278,42 @@ const App = () => {
    */
   const sessionRef = useRef(session);
   sessionRef.current = session;
+
+  /**
+   * Live updates: prices are patched in as the backend pushes them; a
+   * changed match list or wallet / bets are refetched on a nudge.
+   */
+  const [liveConnected, setLiveConnected] = useState(false);
+  useEffect(() => {
+    if (!session || session.user.role !== 'player') {
+      return undefined;
+    }
+    const socket = connectRealtime(
+      () => sessionRef.current?.accessToken ?? null,
+      {
+        onOdds: update => setMatches(current => applyOdds(current, update)),
+        onMatchesChanged: () => {
+          const active = sessionRef.current;
+          if (active) {
+            playerApi
+              .matches(active.accessToken)
+              .then(res => setMatches(res.matches))
+              .catch(() => {});
+          }
+        },
+        onPlayerChanged: () => {
+          refreshPlayer(sessionRef.current);
+        },
+        onConnectionChange: setLiveConnected,
+      },
+    );
+    return () => {
+      socket.disconnect();
+      setLiveConnected(false);
+    };
+    // A new socket per account; token refreshes are read on reconnect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user._id]);
   useEffect(() => {
     if (
       !session ||
@@ -285,7 +326,14 @@ const App = () => {
         refreshPlayer(sessionRef.current);
       }
     };
-    const timer = setInterval(tick, LIVE_REFRESH_MS);
+    const timer = setInterval(
+      tick,
+      liveConnected
+        ? SOCKET_BACKUP_REFRESH_MS
+        : route === 'match'
+          ? MATCH_REFRESH_MS
+          : LIVE_REFRESH_MS,
+    );
     const wake = AppState.addEventListener('change', state => {
       if (state === 'active') {
         tick();
@@ -296,7 +344,7 @@ const App = () => {
       wake.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route, session?.user._id]);
+  }, [route, session?.user._id, liveConnected]);
 
   const matchCards = useMemo(() => matches.map(toMatchCard), [matches]);
   const liveCards = useMemo(

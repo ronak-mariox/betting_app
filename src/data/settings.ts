@@ -1,3 +1,5 @@
+import {brand} from '../theme/brand';
+
 /** Copy transcribed from the Figma SettingsScreen frame (node 9:451). */
 
 export type NotificationSetting = {
@@ -35,5 +37,5 @@ export const languages = ['English', 'Hindi'];
 export const legalLinks = [
   {id: 'privacy', label: 'Privacy Policy'},
   {id: 'terms', label: 'Terms & Conditions'},
-  {id: 'about', label: 'About BetPro', value: 'v2.4.1'},
+  {id: 'about', label: `About ${brand.name}`, value: 'v2.4.1'},
 ];

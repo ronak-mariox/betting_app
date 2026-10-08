@@ -1,3 +1,5 @@
+import {brand} from '../theme/brand';
+
 /**
  * Copy transcribed from the Figma KYC frames: intro (312:2), personal
  * details (312:73), document (312:211 empty, 312:339 type sheet, 312:534
@@ -7,7 +9,7 @@
 
 export const kycIntro = {
   title: 'KYC Verification',
-  body: 'Apni identity verify karo aur BetPro ki sabhi features ka full access pao. Yeh ek baar ka process hai.',
+  body: `Apni identity verify karo aur ${brand.name} ki sabhi features ka full access pao. Yeh ek baar ka process hai.`,
   benefits: [
     {
       emoji: '🏦',
@@ -119,7 +121,7 @@ export const kycStatusCopy = {
   },
   Verified: {
     title: 'KYC Verified Ho Gaya! ✅',
-    body: 'Aapki identity verify ho gayi hai. Ab aap BetPro ki sabhi features use kar sakte ho.',
+    body: `Aapki identity verify ho gayi hai. Ab aap ${brand.name} ki sabhi features use kar sakte ho.`,
     badge: 'Verified',
   },
   Rejected: {

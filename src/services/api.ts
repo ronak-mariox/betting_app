@@ -30,6 +30,10 @@ const API_BASE_URLS = [
   `http://10.0.2.2:${DEV_PORT}/api`,
 ];
 let activeBase = 0;
+
+/** The backend that last answered, without "/api" — where the live-updates socket connects. */
+export const currentServerUrl = () =>
+  API_BASE_URLS[activeBase].replace(/\/api$/, '');
 /** A host that doesn't answer is given up on quickly so the next can be tried. */
 const PROBE_TIMEOUT_MS = 3500;
 
@@ -80,7 +84,7 @@ export const setSessionListener = (listener: typeof sessionListener) => {
 };
 
 /** Returns a usable access token after `stale` was rejected, or null if the session is over. */
-async function rotateTokens(stale: string): Promise<string | null> {
+export async function rotateTokens(stale: string): Promise<string | null> {
   if (!activeTokens) {
     return null;
   }
@@ -379,7 +383,12 @@ export type PlayerWallet = {
   requests: PlayerWalletRequest[];
 };
 
-export type ApiRunner = {name: string; odds: number};
+export type ApiRunner = {
+  name: string;
+  odds: number;
+  /** False while the odds feed has this selection suspended; missing on older/manual markets (= open). */
+  active?: boolean;
+};
 
 export type ApiMatch = {
   _id: string;
@@ -392,6 +401,9 @@ export type ApiMatch = {
   score: string;
   status: 'Live' | 'Upcoming' | 'Suspended' | 'Completed' | 'Settled';
   startTime: string;
+  /** Feed matches: embeddable live score card and video (null when there's none). */
+  scoreUrl?: string | null;
+  streamUrl?: string | null;
   markets: {
     _id: string;
     name: string;
@@ -442,6 +454,14 @@ export type PlayerNotifications = {
 };
 
 /** The player's wallet, match feed, bets and notifications (backend /api/player). */
+/** Settings → Brand from the admin panel; public, read before sign-in (see index.js). */
+export const brandingApi = {
+  get: () =>
+    request<{branding: import('../theme/brand').Branding}>('/branding', {
+      timeoutMs: 1500,
+    }),
+};
+
 export const playerApi = {
   wallet: (accessToken: string) =>
     request<PlayerWallet>('/player/wallet', {accessToken}),

@@ -1,10 +1,11 @@
 import {Feature} from '../components';
 import {colors} from '../theme';
+import {brand} from '../theme/brand';
 
 /** Copy transcribed from the Figma WelcomeScreen frame (node 7:30). */
 
 export const welcome = {
-  title: 'BetPro',
+  title: brand.name,
   tagline: 'The smartest way to bet on cricket, football, tennis & more',
   primaryCta: 'Login',
   secondaryCta: 'Create Account',
